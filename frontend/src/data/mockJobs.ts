@@ -1,0 +1,143 @@
+export interface CompanyData {
+  id: string;
+  name: string;
+  country: string;
+  flag: string;
+  industry: string;
+  jobRole: string;
+  salary: string;
+  experience: string;
+  visaSupport: boolean;
+  description: string;
+  idealCandidate: string;
+  culture: string;
+}
+
+export const MOCK_COMPANIES: CompanyData[] = [
+  {
+    id: "us-meta",
+    name: "Meta",
+    country: "미국",
+    flag: "🇺🇸",
+    industry: "IT 및 기술 전문직",
+    jobRole: "소프트웨어 엔지니어 (Frontend/Backend)",
+    salary: "$150,000+",
+    experience: "경력 (3년 이상)",
+    visaSupport: true,
+    description: "전 세계 수십억 명이 사용하는 글로벌 소셜 플랫폼의 핵심 인프라와 UI를 설계/개발합니다. 강력한 백엔드 시스템 분산 처리 등을 담당합니다.",
+    idealCandidate: "'Move Fast and Break Things' 철학에 공감하며, 모호한 상황 속에서도 코드의 임팩트를 내세우는 해커(Hacker) 마인드.",
+    culture: "Fast-paced, high impact, data-driven.",
+  },
+  {
+    id: "us-swedish-med",
+    name: "Swedish Medical Center",
+    country: "미국",
+    flag: "🇺🇸",
+    industry: "보건의료 및 전문 기술직",
+    jobRole: "미국 간호사 (Registered Nurse, RN)",
+    salary: "$85,000 ~ $110,000",
+    experience: "경력 (1년~3년)",
+    visaSupport: true,
+    description: "미국 워싱턴주 대형 종합병원의 응급실(ER) 및 중환자실(ICU) 간호 업무 전반을 담당합니다. 취업 영주권(EB-3) 스폰서십 지원 가능.",
+    idealCandidate: "환자의 생명을 최우선으로 하며, 다양한 문화적 배경의 직원 및 환자들과 원활히 소통하고 협업하는 강인하고 따뜻한 공감 능력.",
+    culture: "Patient-First, Diversity, Compassion.",
+  },
+  {
+    id: "de-zalando",
+    name: "Zalando",
+    country: "독일",
+    flag: "🇩🇪",
+    industry: "IT 및 기술 전문직",
+    jobRole: "데이터 사이언티스트",
+    salary: "€70,000 ~ €90,000",
+    experience: "신입/경력",
+    visaSupport: true,
+    description: "유럽 최대 패션 플랫폼의 방대한 커머스 데이터를 바탕으로 추천 알고리즘 설계 및 AI 모델링을 고도화합니다.",
+    idealCandidate: "단순히 지표를 보는 것을 넘어 데이터 속에서 비즈니스 인사이트를 도출해 내는 극단적 고객 중심(Customer Centricity) 마인드.",
+    culture: "Data-driven, Customer centricity, Entrepreneurship.",
+  },
+  {
+    id: "jp-toyota",
+    name: "Toyota Motor Corp",
+    country: "일본",
+    flag: "🇯🇵",
+    industry: "자동차 설계 및 엔지니어링",
+    jobRole: "자동차 설계/소프트웨어 제어기술",
+    salary: "600만엔 ~ 900만엔",
+    experience: "경력 (1년~3년)",
+    visaSupport: true,
+    description: "차세대 전기차(EV) 제어 시스템과 자율주행 모빌리티 센서 융합 시스템의 하드웨어 및 임베디드 소프트웨어 설계를 맡습니다.",
+    idealCandidate: "일본어 커뮤니케이션(N2 이상 권장)이 가능하고, 장인정신(Monozukuri)을 이해하며 타협 없는 '품질 우선주의'를 실천하는 꼼꼼함.",
+    culture: "Kaizen(지속 성장), Monozukuri, Quality first.",
+  },
+  {
+    id: "ae-premia",
+    name: "PREMIA TNC CORPORATE",
+    country: "아랍에미리트 (중동)",
+    flag: "🇦🇪",
+    industry: "사무, 금융 및 서비스직",
+    jobRole: "회계사 및 재무 관리자",
+    salary: "4,350 ~ 7,250 만원",
+    experience: "경력 (1년 이상)",
+    visaSupport: true,
+    description: "[OKTA 협력] 두바이 등 중동 시장에 진출하는 한국 기업 및 글로벌 벤더들의 세무 대행, 비용 분석 및 현지 법인 설립 재무를 지원합니다.",
+    idealCandidate: "낯선 중동 비즈니스 문화를 빠르게 흡수하고, 고객의 자금을 투명하게 관리하는 완벽한 전문성과 높은 도덕성.",
+    culture: "Professional, client-centric, adaptable.",
+  },
+  {
+    id: "sg-grab",
+    name: "Grab Singapore",
+    country: "싱가포르",
+    flag: "🇸🇬",
+    industry: "사무, 금융 및 서비스직",
+    jobRole: "해외영업 및 글로벌 마케팅",
+    salary: "S$70,000 ~ S$100,000",
+    experience: "경력 (1년~3년)",
+    visaSupport: true,
+    description: "동남아시아 1위 슈퍼앱 모빌리티/배달 데이터를 바탕으로 국가별 B2B 영업 전략을 세우고, 대규모 마케팅 캠페인을 기획 및 리드합니다.",
+    idealCandidate: "현장주의를 깊게 이해하고 다국적 지사 멤버들과 영어로 협업하며, 데이터를 근거로 빠르게 실행(Execute)하는 성장 지향적 인재.",
+    culture: "Hyper-local, agile, and user-focused.",
+  },
+  {
+    id: "ca-pt",
+    name: "LifeMark Health Group",
+    country: "캐나다",
+    flag: "🇨🇦",
+    industry: "보건의료 및 전문 기술직",
+    jobRole: "물리치료사 / 작업치료사",
+    salary: "CAD$75,000 ~ CAD$95,000",
+    experience: "경력 (2년 이상)",
+    visaSupport: true,
+    description: "캐나다 전역 클리닉에서 노령화 사회에 대비한 만성 통증 치료, 스포츠 손상 재활 및 맞춤형 운동 교정 프로그램을 병행운영합니다.",
+    idealCandidate: "환자의 장기적인 라이프스타일 회복에 깊은 사명감을 가지고, 최신 의료 및 신체역학 지식을 끝없이 학습하는 전문가.",
+    culture: "Empowering recovery, Continuous care.",
+  },
+  {
+    id: "au-hvac",
+    name: "BHP & Sub-contractors",
+    country: "호주",
+    flag: "🇦🇺",
+    industry: "기계 / 숙련 기술직",
+    jobRole: "숙련 기술자 (HVAC, 배관, 플랜트)",
+    salary: "A$80,000 ~ A$110,000",
+    experience: "경력 (3년 이상)",
+    visaSupport: true,
+    description: "호주 전역의 자원 개발 현장 미니 타운 및 빌딩 시설 내의 냉난방(HVAC), 대형 배관 등 필수 인프라 설비를 점검하고 유지 보수합니다.",
+    idealCandidate: "강인한 체력은 물론, 철저한 호주식 안전 규정(Safety First) 준수를 최우선 가치로 여기는 실무형 베테랑 기술자.",
+    culture: "Safety first, Reliability, Team-work.",
+  },
+  {
+    id: "vn-hilton",
+    name: "Hilton Da Nang",
+    country: "베트남",
+    flag: "🇻🇳",
+    industry: "사무, 금융 및 서비스직",
+    jobRole: "호텔리어 (객실/컨시어지부)",
+    salary: "현지 통화+수당 (주거 지원비)",
+    experience: "신입/경력",
+    visaSupport: true,
+    description: "다낭 지역 최고급 힐튼 호텔에서 VIP 및 한인 고객들의 전반적인 체크인/아웃, 컨시어지 지원 및 현지 투어 안내 등 종합 객실 서비스를 운영합니다.",
+    idealCandidate: "전 세계 휴양객이 기대하는 최고의 환대(Hospitality) 마인드와, 변수가 많은 상황에도 미소를 잃지 않고 응대하는 탄력성.",
+    culture: "Warm Hospitality, Inclusion, Excellence.",
+  }
+];

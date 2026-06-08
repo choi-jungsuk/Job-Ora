@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/venv/
+.venv/
+
+# Build outputs
+frontend/.next/
+frontend/out/
+frontend/build/
+backend/__pycache__/
+backend/**/__pycache__/
+*.pyc
+
+# Environment / secrets
+.env
+.env.*
+backend/.env
+frontend/.env
+frontend/.env.local
+!backend/.env.example
+!frontend/.env.example
+
+# Logs and local files
+*.log
+npm-debug.log*
+yarn-debug.log*
+.DS_Store
+*.pem
+
+# IDE / OS
+.vscode/
+.idea/
+Thumbs.db
+
+# Hermes local plans/cache
+.hermes/
