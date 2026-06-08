@@ -23,7 +23,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
     # MVP demo safety: allow Railway/custom domains even if an env value is mistyped.
-    allow_origin_regex=r"https://.*\\.railway\\.app|https://.*job-ora\\.com|http://localhost:3000",
+    allow_origin_regex=r"https://.*\.railway\.app|https://.*job-ora\.com|http://localhost:3000",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
