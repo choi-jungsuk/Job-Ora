@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { FileText, Plus, Star, Trash2, Edit2, CheckCircle, X } from "lucide-react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 interface Resume {
   id: string;
@@ -14,7 +14,6 @@ interface Resume {
 }
 
 export default function ResumeManagement() {
-  const router = useRouter();
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingResume, setEditingResume] = useState<Partial<Resume> | null>(null);
@@ -23,6 +22,7 @@ export default function ResumeManagement() {
     // Load from local storage
     const saved = localStorage.getItem("jobora_resumes");
     if (saved) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResumes(JSON.parse(saved));
     } else {
       // Mock initial data if empty
@@ -244,6 +244,7 @@ export default function ResumeManagement() {
           </div>
         </div>
       )}
+      <Footer />
     </div>
   );
 }

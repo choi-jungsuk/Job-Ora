@@ -6,6 +6,7 @@ import { ArrowLeft, Briefcase, FileText, UserCheck, CheckCircle2, ChevronRight }
 import { MOCK_COMPANIES } from "@/data/mockJobs";
 import { use } from "react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export default function JobDetail({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function JobDetail({ params }: { params: Promise<{ id: string }> 
         const resumes = JSON.parse(saved);
         const defaultResume = resumes.find((r: { isDefault: boolean, content: string }) => r.isDefault);
         if (defaultResume) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setResumeText(defaultResume.content);
         }
       } catch (e) {
@@ -160,6 +162,7 @@ export default function JobDetail({ params }: { params: Promise<{ id: string }> 
         </div>
 
       </main>
+      <Footer />
     </div>
   );
 }

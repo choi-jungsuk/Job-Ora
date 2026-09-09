@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Globe, Sparkles, SlidersHorizontal, RefreshCw, Briefcase, MapPin, DollarSign, Calendar, Bot, DatabaseZap, ClipboardCheck, ArrowRight } from "lucide-react";
+import { Globe, Sparkles, SlidersHorizontal, RefreshCw, Briefcase, Calendar, Bot, DatabaseZap, ClipboardCheck, ArrowRight } from "lucide-react";
 import { MOCK_COMPANIES } from "@/data/mockJobs";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const AI_AGENTS = [
   {
@@ -160,7 +161,7 @@ export default function Home() {
                 className="text-[28px] md:text-[36px] font-black leading-[1.3] mb-4 tracking-tight break-keep"
                 style={{ color: '#ffffff', textShadow: '0 2px 10px rgba(0,0,0,0.2)' }}
               >
-                글로벌 기업 현장 HR 담당자의 <br className="hidden md:block" />초압박 AI 모의면접을 경험해 보십시오.
+                글로벌 기업 현장 HR 담당자의 <br className="hidden md:block" />역량 검증 AI 모의면접을 경험해 보십시오.
               </h1>
               
               <p 
@@ -334,6 +335,7 @@ export default function Home() {
         </div>
 
       </main>
+      <Footer />
     </div>
   );
 }

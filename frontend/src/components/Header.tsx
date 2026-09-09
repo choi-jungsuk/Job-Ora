@@ -8,7 +8,7 @@ export default function Header() {
   const pathname = usePathname();
 
   const handleLoginClick = () => {
-    alert("기능 준비중입니다.");
+    alert("현재 정식 오픈 및 로그인 준비 중입니다. 문의사항은 contact@granosoai.com으로 연락해 주세요.");
   };
 
   const getMenuClass = (path: string) => {
@@ -73,8 +73,18 @@ export default function Header() {
           
           <div className="relative group">
             <span 
+              className={getMenuClass("/pricing")} 
+              onClick={() => router.push("/pricing")}
+            >
+              이용권 안내
+              <span className={`absolute bottom-0 left-0 w-full h-[3px] bg-[#004C99] rounded-full transition-transform duration-300 origin-left ${pathname === "/pricing" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`}></span>
+            </span>
+          </div>
+
+          <div className="relative group">
+            <span 
               className={getMenuClass("/about")} 
-              onClick={() => alert("기능 준비중입니다.")}
+              onClick={() => router.push("/about")}
             >
               회사 소개
               <span className={`absolute bottom-0 left-0 w-full h-[3px] bg-[#004C99] rounded-full transition-transform duration-300 origin-left ${pathname === "/about" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`}></span>
@@ -107,7 +117,7 @@ export default function Header() {
             }}
             onClick={handleLoginClick}
           >
-            로그인
+            로그인 준비 중
           </button>
         </div>
       </div>
