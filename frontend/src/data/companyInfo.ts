@@ -19,7 +19,7 @@ export const COMPANY_INFO: CompanyInfo = {
   businessItem: "취업 및 스타트업 교육 및 멘토링, 응용 소프트웨어 개발·공급·운영업, 취업 및 스타트업 지원 컨설팅업 등",
   supportEmail: "contact@granosoai.com",
   operatingHours: "평일 10:00 ~ 17:00 (주말 및 공휴일 휴무)",
-  mailOrderSalesRegistration: "확인 중", // 통신판매업 신고 완료 시 번호로 교체
+  mailOrderSalesRegistration: "제2026-부천원미-1884호",
 };
 
 export interface PricingPlan {
