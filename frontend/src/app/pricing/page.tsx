@@ -14,7 +14,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] font-sans flex flex-col">
       <Header />
-      
+
       <main className="max-w-[1024px] w-full mx-auto px-4 md:px-8 py-12 flex-1">
         {/* 헤더 섹션 */}
         <div className="text-center max-w-2xl mx-auto mb-12">
@@ -121,7 +121,7 @@ export default function PricingPage() {
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {[
-              { step: "01", title: "공고 선택", desc: "목표 기업 또는 채용공고를 선택합니다." },
+              { step: "01", title: "자료 입력", desc: "지원하려는 기업정보 또는 채용공고를 직접 입력합니다." },
               { step: "02", title: "정보 입력", desc: "이력서 또는 자기소개 내용을 입력합니다." },
               { step: "03", title: "이용권 구매", desc: "원하는 모의면접 이용권을 선택 후 결제합니다." },
               { step: "04", title: "이용권 지급", desc: "결제 완료 후 이용자 계정에 즉시 지급됩니다." },

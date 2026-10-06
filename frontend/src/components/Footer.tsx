@@ -6,12 +6,12 @@ export default function Footer() {
     <footer className="bg-slate-900 text-slate-400 text-[13px] border-t border-slate-800 mt-auto">
       <div className="max-w-[1440px] mx-auto px-6 py-12">
         {/* 상단: 서비스 면책 및 성격 고지 */}
-        <div className="bg-slate-800/60 rounded-xl p-5 mb-8 border border-slate-700/60">
-          <p className="text-slate-300 font-medium leading-relaxed">
-            <strong className="text-white">Job-Ora</strong>는 해외취업 면접 준비를 위한 AI 모의면접 연습 서비스입니다.
+        <div className="bg-slate-800/60 rounded-xl p-5 mb-8 border border-slate-700/60 space-y-2">
+          <p className="text-slate-200 font-semibold leading-relaxed">
+            Job-Ora는 사용자가 입력한 채용공고·기업정보·직무정보를 바탕으로 면접 질문과 답변 피드백을 제공하는 AI 모의면접 서비스입니다. 채용정보 제공, 직업소개, 취업 알선, 기업 매칭은 제공하지 않습니다.
           </p>
-          <p className="text-slate-400 text-[12px] mt-1 leading-relaxed">
-            본 서비스는 특정 기업의 채용, 합격 또는 취업 결과를 보장하지 않으며, AI가 생성한 질문과 피드백은 면접 준비를 돕기 위한 참고 자료입니다.
+          <p className="text-slate-400 text-[12px] leading-relaxed">
+            Job-Ora는 사용자가 준비 중인 지원 건에 대해 면접 연습을 돕는 보조 도구입니다. 채용공고의 정확성, 채용 여부, 비자 승인 여부, 고용 조건은 해당 공고 제공처 또는 관련 기관을 통해 직접 확인해야 합니다.
           </p>
         </div>
 

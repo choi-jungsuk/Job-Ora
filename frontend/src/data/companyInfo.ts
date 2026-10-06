@@ -54,7 +54,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     name: "기본 모의면접 이용권",
     price: 2000,
     priceFormatted: "2,000원",
-    badge: "추천",
+    badge: "인기",
     period: "결제일로부터 30일",
     description: "심층 꼬리질문과 종합 피드백으로 실전 면접 감각을 극대화하는 정규 이용권입니다.",
     features: [

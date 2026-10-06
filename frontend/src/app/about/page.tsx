@@ -27,7 +27,7 @@ export default function AboutPage() {
             <span className="text-[#004C99]">Job-Ora</span>가 함께합니다.
           </h1>
           <p className="mt-4 text-slate-600 text-base md:text-lg leading-relaxed">
-            Job-Ora는 목표 글로벌 기업의 채용공고와 지원자의 이력서를 심층 분석하여, 현업 채용 담당자 관점의 맞춤형 질문과 실전 꼬리질문으로 면접 역량 강화를 돕는 AI 모의면접 연습 서비스입니다.
+            Job-Ora는 사용자가 직접 입력한 목표 글로벌 기업의 정보, 채용공고 및 이력서 내용을 심층 분석하여, 현업 채용 담당자 관점의 맞춤형 질문과 실전 꼬리질문으로 면접 역량 강화를 돕는 AI 모의면접 연습 서비스입니다.
           </p>
         </section>
 
@@ -39,7 +39,7 @@ export default function AboutPage() {
             </div>
             <h2 className="text-lg font-bold text-slate-900 mb-2">기업 DNA 맞춤 분석</h2>
             <p className="text-slate-600 text-sm leading-relaxed">
-              지원 기업의 비전, 핵심 가치, 최신 채용 요건을 다각도로 분석하여 기업이 실제로 찾는 인재상에 최적화된 질문을 제시합니다.
+              사용자가 입력한 지원 기업의 비전, 핵심 가치, 채용 요건을 다각도로 분석하여 기업이 실제로 찾는 인재상에 최적화된 질문을 제시합니다.
             </p>
           </div>
 
@@ -73,9 +73,9 @@ export default function AboutPage() {
           <p className="text-slate-600 leading-relaxed mb-4 text-sm md:text-base">
             Job-Ora는 <strong>{COMPANY_INFO.legalName}</strong>가 연구·개발하는 AI 기반 취업 역량 솔루션입니다. 우리는 취업준비생들이 겪는 정보 비대칭과 막연한 면접 불안감을 해소하고, 누구나 합리적인 비용으로 양질의 실전 면접 연습을 할 수 있도록 지원합니다.
           </p>
-          
+
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-500 leading-relaxed">
-            <strong>투명한 운영 고지:</strong> Job-Ora는 구직자의 주체적인 면접 역량 강화를 돕는 연습 도구이며, 특정 기업의 합격이나 채용을 보증하거나 대리하지 않습니다. AI 질문과 분석 피드백은 참고 자료로 제공되며, 최종 지원 결정 및 면접 응시는 지원자 본인의 책임하에 진행됩니다.
+            <strong>투명한 운영 고지:</strong> Job-Ora는 구직자가 직접 입력한 자료를 바탕으로 주체적인 면접 역량 강화를 돕는 연습 도구이며, 채용공고를 직접 제공하거나 취업 알선 및 일자리 매칭을 진행하지 않습니다. 또한 특정 기업의 합격이나 채용, 비자 승인을 일체 보증하지 않습니다. AI 질문과 분석 피드백은 참고 자료로 제공되며, 최종 지원 결정 및 면접 응시는 지원자 본인의 책임하에 진행됩니다.
           </div>
 
           <div className="mt-6 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">

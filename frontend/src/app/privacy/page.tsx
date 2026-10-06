@@ -53,7 +53,7 @@ export default function PrivacyPage() {
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/70">
                   <h3 className="font-bold text-slate-900 mb-1.5">면접 준비 및 연습 정보</h3>
                   <p className="text-slate-600 text-sm leading-relaxed">
-                    학교명 또는 소속 구분, 전공 계열, 졸업/취업준비 상태, 희망 국가 및 직무, 목표 기업 또는 채용공고 정보, 이력서 또는 자기소개 입력 내용, 모의면접 질의응답 및 음성/텍스트 답변 기록
+                    학교명 또는 소속 구분, 전공 계열, 졸업/취업준비 상태, 희망 국가 및 직무, 사용자가 직접 입력한 목표 기업 정보 또는 채용공고 내용, 이력서 또는 자기소개 입력 내용, 모의면접 질의응답 및 음성/텍스트 답변 기록
                   </p>
                 </div>
 
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
               </h2>
               <ol className="list-decimal pl-5 space-y-1.5 text-slate-700">
                 <li>회원 식별, 본인 확인 및 부정 이용 방지</li>
-                <li>기업별 인재상 맞춤형 AI 모의면접 질문 생성 및 피드백 리포트 제공</li>
+                <li>사용자가 입력한 목표 기업별 인재상 맞춤형 AI 모의면접 질문 생성 및 피드백 리포트 제공</li>
                 <li>이용권 결제 확인, 영수증 발급 및 유료 서비스 지급 처리</li>
                 <li>고객 문의, 환불 요청 응대 및 서비스 오류 해결</li>
                 <li>신규 기능 개발, 성능 측정 및 시스템 품질 최적화</li>

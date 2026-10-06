@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  Send, User, Building, Loader2, Sparkles, Target, Mic, MicOff, Video, 
-  ShieldCheck, CheckCircle2, Volume2, VolumeX, LogOut, RefreshCw, Play, Clock, 
+import {
+  Send, User, Building, Loader2, Sparkles, Target, Mic, MicOff, Video,
+  ShieldCheck, CheckCircle2, Volume2, VolumeX, LogOut, RefreshCw, Play, Clock,
   HelpCircle, BookOpen, AlertCircle
 } from "lucide-react";
 import { CompanyData } from "@/data/mockJobs";
@@ -42,34 +42,34 @@ type CultureFitBreakdown = {
 
 export default function InterviewPage() {
   const router = useRouter();
-  
+
   // Core States
   const [step, setStep] = useState<"setup" | "interview" | "result">("setup");
   const [mode, setMode] = useState<"practice" | "real">("practice");
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [resumeText, setResumeText] = useState("");
-  
+
   // Active Interview States
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [activeTab, setActiveTab] = useState<"jd" | "ideal" | "resume">("jd");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  
+
   // Timer States
   const [timeLeft, setTimeLeft] = useState(150); // 2 mins 30 secs
   const [timerActive, setTimerActive] = useState(false);
-  
+
   // Simulation States
   const [isRecording, setIsRecording] = useState(false);
   const [voiceVolume, setVoiceVolume] = useState(0);
   const [interviewerSpeaking, setInterviewerSpeaking] = useState(false);
-  
+
   // AI Guide Data (From API)
   const [currentTips, setCurrentTips] = useState("");
   const [currentKeywords, setCurrentKeywords] = useState<string[]>([]);
   const [matchedKeywords, setMatchedKeywords] = useState<string[]>([]);
-  
+
   // Result States
   const [qaReport, setQaReport] = useState<QAReportItem[]>([]);
   const [finalScores, setFinalScores] = useState<CompetencyScores>({
@@ -96,26 +96,26 @@ export default function InterviewPage() {
   // TTS helper function
   const speakText = (text: string) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    
+
     // Stop any current speech
     window.speechSynthesis.cancel();
-    
+
     if (isMutedRef.current) {
       setInterviewerSpeaking(false);
       return;
     }
-    
+
     // Clean up Markdown and special symbols for natural reading
     const cleanText = text
       .replace(/[\*#_`]/g, "")
       .replace(/\(오프라인 모드 연결됨\)/g, "")
       .replace(/\(네트워크 타임아웃으로 로컬 질문으로 대체합니다\.\)/g, "")
       .trim();
-      
+
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = "ko-KR";
     utterance.rate = 1.5;
-    
+
     // Try to get Korean voice
     let voices = window.speechSynthesis.getVoices();
     let koVoice = voices.find(v => v.lang.includes("ko") || v.lang.startsWith("ko-"));
@@ -130,19 +130,19 @@ export default function InterviewPage() {
         }
       };
     }
-    
+
     utterance.onstart = () => {
       setInterviewerSpeaking(true);
     };
-    
+
     utterance.onend = () => {
       setInterviewerSpeaking(false);
     };
-    
+
     utterance.onerror = () => {
       setInterviewerSpeaking(false);
     };
-    
+
     window.speechSynthesis.speak(utterance);
   };
 
@@ -171,12 +171,12 @@ export default function InterviewPage() {
   // Trigger TTS on new messages
   useEffect(() => {
     if (messages.length === 0) return;
-    
+
     const lastMessage = messages[messages.length - 1];
     if (lastMessage.role === "interviewer") {
       speakText(lastMessage.content);
     }
-    
+
     return () => {
       if (typeof window !== "undefined" && window.speechSynthesis) {
         window.speechSynthesis.cancel();
@@ -188,22 +188,8 @@ export default function InterviewPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [webcamError, setWebcamError] = useState<string | null>(null);
-  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
-  // Check webcam permission on mount
-  useEffect(() => {
-    if (typeof window !== "undefined" && navigator.mediaDevices) {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then((s) => {
-          setHasCameraPermission(true);
-          s.getTracks().forEach(track => track.stop());
-        })
-        .catch((err) => {
-          console.warn("Initial webcam access check failed:", err);
-          setHasCameraPermission(false);
-        });
-    }
-  }, []);
+  // Camera permission is requested only after user enters interview room (step === "interview")
 
   // Handle webcam stream start/stop based on step
   useEffect(() => {
@@ -218,11 +204,9 @@ export default function InterviewPage() {
         });
         activeStream = mediaStream;
         setStream(mediaStream);
-        setHasCameraPermission(true);
       } catch (err) {
         console.error("Webcam access error:", err);
         setWebcamError("웹캠 연결 실패 (권한 없음)");
-        setHasCameraPermission(false);
       }
     };
 
@@ -249,14 +233,34 @@ export default function InterviewPage() {
   useEffect(() => {
     const savedCompany = localStorage.getItem("jobora_company");
     const savedResume = localStorage.getItem("jobora_resume");
-    
-    if (!savedCompany || !savedResume) {
-      router.push("/");
+
+    if (!savedCompany) {
+      // 기본 사용자 지정 공고 생성
+      const defaultCompany: CompanyData = {
+        id: "custom-default",
+        name: "지원 희망 기업",
+        country: "해외/글로벌",
+        flag: "🌐",
+        industry: "전문 직무 분야",
+        jobRole: "글로벌 포지션 지원자",
+        salary: "공고 명시 조건",
+        experience: "신입/경력",
+        visaSupport: false,
+        description: "사용자가 입력한 채용공고의 주요 업무 요건과 직무 설명에 맞추어 실전 모의면접을 진행합니다.",
+        idealCandidate: "적극적인 커뮤니케이션 능력과 현장 적응력, 성실한 태도를 갖춘 인재",
+        culture: "사용자 입력 자료 기반 실전 인터뷰",
+      };
+      setCompany(defaultCompany);
+      setResumeText(savedResume || "성실한 태도와 직무 전문성을 갖추고 글로벌 환경에 도전하는 인재입니다.");
       return;
     }
-    
-    setCompany(JSON.parse(savedCompany));
-    setResumeText(savedResume);
+
+    try {
+      setCompany(JSON.parse(savedCompany));
+      setResumeText(savedResume || "성실한 태도와 직무 전문성을 갖추고 글로벌 환경에 도전하는 인재입니다.");
+    } catch {
+      router.push("/");
+    }
   }, [router]);
 
   // Timer Countdown Effect
@@ -293,7 +297,7 @@ export default function InterviewPage() {
   // Real-time keyword checking as the user types
   useEffect(() => {
     if (currentKeywords.length > 0 && input.trim()) {
-      const matched = currentKeywords.filter(keyword => 
+      const matched = currentKeywords.filter(keyword =>
         input.toLowerCase().includes(keyword.toLowerCase())
       );
       setMatchedKeywords(matched);
@@ -307,32 +311,32 @@ export default function InterviewPage() {
   // Retrieve corporate interviewer persona details
   const getInterviewerPersona = (companyId: string) => {
     switch (companyId) {
-      case "us-meta":
+      case "sample-it-dev":
         return {
           roleName: "Hermes (Tech Lead)",
-          style: "혁신 & 속도 중심 검증",
-          description: "Meta의 핵심 철학인 'Move Fast'와 'Focus on Impact'를 기반으로, 기민한 해결력과 실질적 결과 임팩트를 집요하게 검증하는 직설적 스타일의 면접관입니다.",
+          style: "혁신 & 기술 문제해결 역량 검증",
+          description: "기민한 문제 해결력과 실질적 결과 임팩트를 체계적으로 검증하는 직무 기술 면접관입니다.",
           accentColor: "#0066CC"
         };
-      case "jp-toyota":
+      case "sample-engineering":
         return {
-          roleName: "Hermes (품질제어 총괄부장)",
-          style: "장인정신 & 지속적 개선(Kaizen) 검증",
-          description: "일본 도요타의 장인정신(Monozukuri)과 협업 품질을 중시하며, 발생한 문제를 해결하기 위한 철저한 분석과 재발 방지 노력을 정중하고 집요하게 압박하는 스타일입니다.",
-          accentColor: "#E82127"
+          roleName: "Hermes (품질/설계 총괄 엔지니어)",
+          style: "공학적 분석 & 지속적 개선 역량 검증",
+          description: "설계 원칙과 협업 품질을 중시하며, 문제를 해결하기 위한 철저한 분석과 재발 방지 노력을 검증하는 스타일입니다.",
+          accentColor: "#004C99"
         };
-      case "us-swedish-med":
+      case "sample-service":
         return {
-          roleName: "Hermes (수석 간호 관리부장)",
-          style: "따뜻한 공감 & 소통능력 검증",
-          description: "환자 우선주의(Patient-First) 가치를 평가하기 위해, 실제 응급/중환자 환경에서의 갈등 대처와 다문화 팀워크에서의 따뜻한 의사소통 능력을 중점 질문합니다.",
+          roleName: "Hermes (고객경험 총괄 면접관)",
+          style: "공감 & 커뮤니케이션 역량 검증",
+          description: "고객 중심 사고와 다문화 환경에서의 유연한 협업, 원활한 의사소통 능력을 중점 질문합니다.",
           accentColor: "#008080"
         };
       default:
         return {
           roleName: "Hermes (수석 HR 면접관)",
-          style: "핵심 직무 적합성 & 컬처핏 검증",
-          description: "회사의 채용 인재상과 요구 경력을 대조 분석하여, 기업의 가치관과 문화에 유연하게 적응하고 성과를 도출할 수 있는지 종합 검증합니다.",
+          style: "지원 기업 인재상 & 컬처핏 검증",
+          description: "사용자가 입력한 지원 기업의 인재상과 요구 역량을 대조 분석하여, 기업의 가치관과 문화에 유연하게 적응하고 성과를 도출할 수 있는지 종합 검증합니다.",
           accentColor: "#004C99"
         };
     }
@@ -345,7 +349,7 @@ export default function InterviewPage() {
     setStep("interview");
     setIsTyping(true);
     setInterviewerSpeaking(true);
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/interview/start`, {
         method: "POST",
@@ -357,36 +361,36 @@ export default function InterviewPage() {
           ideal_candidate_profile: company.idealCandidate
         })
       });
-      
+
       if (!response.ok) throw new Error("Failed to start interview");
-      
+
       const data = await response.json();
-      
+
       if (data.questions && data.questions.length > 0) {
         const firstQ = data.questions[0];
         // Handle both old list response and new object response formats
         const questionText = typeof firstQ === "string" ? firstQ : firstQ.question;
         const questionTips = typeof firstQ === "string" ? "" : firstQ.tips;
         const questionKeywords = typeof firstQ === "string" ? [] : firstQ.keywords;
-        
+
         setMessages([
-          { 
-            role: "interviewer", 
-            content: `안녕하세요. ${company.name}의 채용면접을 시작하겠습니다. 지원해 주셔서 감사합니다. 첫 번째 질문을 드릴 테니 준비되시면 답변해 주시기 바랍니다.\n\n질문: ${questionText}` 
+          {
+            role: "interviewer",
+            content: `안녕하세요. ${company.name} 기준 AI 모의면접을 시작하겠습니다. 첫 번째 질문을 드릴 테니 준비되시면 답변해 주시기 바랍니다.\n\n질문: ${questionText}`
           }
         ]);
-        
+
         setCurrentTips(questionTips);
         setCurrentKeywords(questionKeywords);
       } else {
         setMessages([
-          { role: "interviewer", content: `안녕하세요. ${company.name} 채용면접을 진행하게 된 면접관 ${persona.roleName}입니다. 본인의 이력서와 직무 경력을 바탕으로 간단히 자기소개를 부탁드립니다.` }
+          { role: "interviewer", content: `안녕하세요. ${company.name} 기준 AI 모의면접을 진행하게 된 면접관 ${persona.roleName}입니다. 본인의 이력서와 직무 경력을 바탕으로 간단히 자기소개를 부탁드립니다.` }
         ]);
       }
     } catch (err) {
       console.error(err);
       setMessages([
-        { role: "interviewer", content: `(오프라인 모드 연결됨) 안녕하세요. ${company.name} 채용면접을 진행하게 된 면접관 ${persona.roleName}입니다. 준비되셨다면 자기소개를 부탁드립니다.` }
+        { role: "interviewer", content: `(오프라인 모드 연결됨) 안녕하세요. ${company.name} 기준 AI 모의면접을 진행하게 된 면접관 ${persona.roleName}입니다. 준비되셨다면 자기소개를 부탁드립니다.` }
       ]);
     } finally {
       setIsTyping(false);
@@ -399,12 +403,12 @@ export default function InterviewPage() {
   // Submit Answer & Fetch Next Question
   const handleSend = async () => {
     if (!input.trim() || isTyping) return;
-    
+
     setTimerActive(false);
     const userMessage: Message = { role: "candidate", content: input };
     const newHistory = [...messages, userMessage];
     setMessages(newHistory);
-    
+
     const candidateAnswer = input;
     setInput("");
     setIsTyping(true);
@@ -423,11 +427,11 @@ export default function InterviewPage() {
           history: newHistory
         })
       });
-      
+
       if (!response.ok) throw new Error("Failed to communicate");
-      
+
       const data = await response.json();
-      
+
       // Store evaluation for this answer
       const currentQText = messages[messages.length - 1]?.content.split("질문: ").pop() || "자기소개 요청";
       const newReportItem: QAReportItem = {
@@ -437,7 +441,7 @@ export default function InterviewPage() {
         betterAnswer: data.better_answer || ""
       };
       setQaReport(prev => [...prev, newReportItem]);
-      
+
       if (data.is_finished) {
         setFinalScores(data.scores || {
           technical: 85,
@@ -455,7 +459,7 @@ export default function InterviewPage() {
         setStep("result");
         return;
       }
-      
+
       if (data.next_question) {
         setMessages([...newHistory, { role: "interviewer", content: `답변 감사드립니다. 이어서 질문 드리겠습니다.\n\n질문: ${data.next_question}` }]);
         setCurrentTips(data.tips || "");
@@ -480,10 +484,10 @@ export default function InterviewPage() {
       setIsRecording(false);
       return;
     }
-    
+
     setIsRecording(true);
     setInput("잠시 생각 중입니다...");
-    
+
     setTimeout(() => {
       setInput("네, 질문에 대해 답변드리겠습니다. 저는 작성한 이력서 내용처럼 이전 직장과 프로젝트에서 항상 협업을 주도하고 효율적인 솔루션을 제시하기 위해 노력해 왔습니다. 특히 직무 경험 상 발생했던 돌발 변수에 대해서도 적극적인 피드백 교환을 통해 해결 방안을 고안해 낸 경험이 있습니다.");
     }, 2500);
@@ -497,11 +501,11 @@ export default function InterviewPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] font-sans flex flex-col">
-      
+
       {/* 1. Setup / Mode Selection Phase */}
       {step === "setup" && (
         <div className="flex-1 flex flex-col items-center justify-center py-10 px-4 max-w-[1200px] mx-auto w-full">
-          
+
           <div className="w-full text-center mb-8">
             <span className="bg-[#EBF5FF] text-[#004C99] text-[12px] font-black px-3.5 py-1.5 rounded-full uppercase tracking-wider">
               AI Mock Interview Studio
@@ -515,31 +519,31 @@ export default function InterviewPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
-            
+
             {/* Left: Persona Card & Hardware Diagnostics */}
             <div className="lg:col-span-7 flex flex-col gap-6">
-              
+
               {/* Interviewer Persona Card */}
               <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] p-6 md:p-8">
                 <h3 className="text-[18px] font-black text-slate-800 mb-5 pb-3 border-b border-slate-100 flex items-center gap-2">
                   <Building size={20} className="text-[#004C99]" />
                   배정된 면접관 프로필
                 </h3>
-                
+
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                   <div className="w-24 h-24 rounded-2xl border border-slate-100 overflow-hidden flex-shrink-0 bg-slate-50 relative">
-                    <img 
-                      src="/images/ai_interviewer_avatar.png" 
+                    <img
+                      src="/images/ai_interviewer_avatar.png"
                       alt="Interviewer Avatar"
                       className="w-full h-full object-cover"
                     />
                     <span className="absolute bottom-1 right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white animate-pulse"></span>
                   </div>
-                  
+
                   <div className="flex-1 text-center sm:text-left">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                       <span className="text-[20px] font-black text-slate-800">{persona.roleName}</span>
-                      <span 
+                      <span
                         className="text-[12px] font-bold px-2.5 py-0.5 rounded-full text-white self-center"
                         style={{ backgroundColor: persona.accentColor }}
                       >
@@ -550,7 +554,7 @@ export default function InterviewPage() {
                       {persona.description}
                     </p>
                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-100/50 text-[13px] text-slate-500 leading-[1.6]">
-                      <strong className="text-slate-700 block mb-1">🎯 인재상 매칭 진단 기준:</strong>
+                      <strong className="text-slate-700 block mb-1">🎯 공고 요구 역량 기준:</strong>
                       {company.idealCandidate}
                     </div>
                   </div>
@@ -565,39 +569,24 @@ export default function InterviewPage() {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center gap-3">
-                    <CheckCircle2 
-                      size={18} 
-                      className={
-                        hasCameraPermission === true 
-                          ? "text-[#10B981] flex-shrink-0" 
-                          : hasCameraPermission === false 
-                            ? "text-red-500 flex-shrink-0" 
-                            : "text-amber-500 flex-shrink-0"
-                      } 
-                    />
+                    <CheckCircle2 size={18} className="text-[#004C99] flex-shrink-0" />
                     <div>
                       <p className="text-[13px] font-bold text-slate-700">웹 카메라</p>
-                      <p className="text-[11px] text-slate-400">
-                        {hasCameraPermission === true 
-                          ? "연결 및 송출 정상" 
-                          : hasCameraPermission === false 
-                            ? "카메라 권한 필요" 
-                            : "권한 확인 중..."}
-                      </p>
+                      <p className="text-[11px] text-slate-400">면접실 입장 시 연결</p>
                     </div>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center gap-3">
-                    <CheckCircle2 size={18} className="text-[#10B981] flex-shrink-0" />
+                    <CheckCircle2 size={18} className="text-[#004C99] flex-shrink-0" />
                     <div>
                       <p className="text-[13px] font-bold text-slate-700">오디오 마이크</p>
-                      <p className="text-[11px] text-slate-400">수신 데시벨 정상</p>
+                      <p className="text-[11px] text-slate-400">면접실 입장 후 확인</p>
                     </div>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center gap-3">
-                    <CheckCircle2 size={18} className="text-[#10B981] flex-shrink-0" />
+                    <CheckCircle2 size={18} className="text-[#004C99] flex-shrink-0" />
                     <div>
                       <p className="text-[13px] font-bold text-slate-700">네트워크 연결</p>
-                      <p className="text-[11px] text-slate-400">지연 속도 양호 (양방향)</p>
+                      <p className="text-[11px] text-slate-400">면접 진행 중 상태 확인</p>
                     </div>
                   </div>
                 </div>
@@ -607,20 +596,20 @@ export default function InterviewPage() {
 
             {/* Right: Mode Selection & Start */}
             <div className="lg:col-span-5 flex flex-col gap-6">
-              
+
               <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] p-6 md:p-8 flex flex-col h-full justify-between">
                 <div>
                   <h3 className="text-[18px] font-black text-slate-800 mb-5 pb-3 border-b border-slate-100">
                     진행할 면접 방식 선택
                   </h3>
-                  
+
                   <div className="flex flex-col gap-4">
                     {/* Practice Mode Card */}
-                    <div 
+                    <div
                       onClick={() => setMode("practice")}
                       className={`p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 flex items-start gap-4 ${
-                        mode === "practice" 
-                          ? "border-[#004C99] bg-[#EBF5FF]/20" 
+                        mode === "practice"
+                          ? "border-[#004C99] bg-[#EBF5FF]/20"
                           : "border-slate-200/60 hover:border-slate-300 bg-white"
                       }`}
                     >
@@ -639,11 +628,11 @@ export default function InterviewPage() {
                     </div>
 
                     {/* Real Mode Card */}
-                    <div 
+                    <div
                       onClick={() => setMode("real")}
                       className={`p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 flex items-start gap-4 ${
-                        mode === "real" 
-                          ? "border-[#004C99] bg-[#EBF5FF]/20" 
+                        mode === "real"
+                          ? "border-[#004C99] bg-[#EBF5FF]/20"
                           : "border-slate-200/60 hover:border-slate-300 bg-white"
                       }`}
                     >
@@ -664,7 +653,7 @@ export default function InterviewPage() {
                 </div>
 
                 <div className="mt-8">
-                  <button 
+                  <button
                     onClick={startInterview}
                     className="w-full py-4 rounded-xl font-bold hover:shadow-lg transition-all transform hover:scale-[1.01] active:scale-98 text-[15px] flex items-center justify-center gap-2"
                     style={{
@@ -693,18 +682,18 @@ export default function InterviewPage() {
       {/* 2. Active Mock Interview Phase */}
       {step === "interview" && (
         <div className="flex-1 flex overflow-hidden">
-          
+
           {/* Company Context Sidebar */}
-          <InterviewSidebar 
-            company={company} 
-            resumeText={resumeText} 
-            activeTab={activeTab} 
-            setActiveTab={setActiveTab} 
+          <InterviewSidebar
+            company={company}
+            resumeText={resumeText}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
           />
 
           {/* Main Interview Suite */}
           <div className="flex-1 flex flex-col h-full bg-[#111827] relative text-white">
-            
+
             {/* Top Bar Status */}
             <div className="flex items-center justify-between p-4 px-6 border-b border-slate-800 bg-[#0F172A] z-20">
               <div className="flex items-center gap-3">
@@ -718,25 +707,25 @@ export default function InterviewPage() {
                   </span>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <span className={`text-[12px] font-bold px-3 py-1 rounded-full border ${
-                  mode === 'practice' 
-                    ? 'bg-[#004C99]/20 border-[#004C99]/40 text-[#0066CC]' 
+                  mode === 'practice'
+                    ? 'bg-[#004C99]/20 border-[#004C99]/40 text-[#0066CC]'
                     : 'bg-red-500/10 border-red-500/30 text-red-500'
                 }`}>
                   {mode === 'practice' ? '연습 모드 진행 중' : '실전 모드 진행 중'}
                 </span>
-                
-                <button 
+
+                <button
                   onClick={toggleMute}
                   className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors flex items-center justify-center"
                   title={isMuted ? "음소거 해제" : "음소거"}
                 >
                   {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                 </button>
-                
-                <button 
+
+                <button
                   onClick={() => {
                     if (confirm("면접을 중단하고 홈으로 이동하시겠습니까?")) {
                       router.push("/");
@@ -753,14 +742,14 @@ export default function InterviewPage() {
             {/* Split Screen Video Simulator */}
             <div className="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col items-center justify-center">
               <div className="max-w-[1000px] w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                
+
                 {/* AI Interviewer Video Box */}
                 <div className="bg-slate-950 border border-slate-800 rounded-2xl relative overflow-hidden aspect-[4/3] flex flex-col items-center justify-center p-6 shadow-xl group">
                   <div className={`w-32 h-32 rounded-full overflow-hidden border-4 transition-all duration-300 relative bg-slate-900 ${
                     interviewerSpeaking || isTyping ? 'border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)] scale-105' : 'border-slate-800'
                   }`}>
-                    <img 
-                      src="/images/ai_interviewer_avatar.png" 
+                    <img
+                      src="/images/ai_interviewer_avatar.png"
                       alt="AI Interviewer"
                       className="w-full h-full object-cover"
                     />
@@ -768,7 +757,7 @@ export default function InterviewPage() {
                       <span className="absolute inset-0 border-4 border-blue-500 rounded-full animate-ping opacity-75"></span>
                     )}
                   </div>
-                  
+
                   <div className="mt-4 text-center">
                     <p className="font-extrabold text-[14px] text-slate-300">{persona.roleName}</p>
                     <div className="flex items-center justify-center gap-1 mt-1 text-[11px] text-slate-500 font-bold">
@@ -781,12 +770,12 @@ export default function InterviewPage() {
                   {(interviewerSpeaking || isTyping) && (
                     <div className="absolute bottom-4 flex items-end gap-1.5 h-6">
                       {[...Array(6)].map((_, i) => (
-                        <div 
-                          key={i} 
-                          className="w-1 bg-[#0066CC] rounded-full animate-bounce" 
-                          style={{ 
+                        <div
+                          key={i}
+                          className="w-1 bg-[#0066CC] rounded-full animate-bounce"
+                          style={{
                             height: `${Math.random() * 100}%`,
-                            animationDuration: `${Math.floor(Math.random() * 500) + 400}ms` 
+                            animationDuration: `${Math.floor(Math.random() * 500) + 400}ms`
                           }}
                         ></div>
                       ))}
@@ -801,7 +790,7 @@ export default function InterviewPage() {
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                     REC
                   </div>
-                  
+
                   <div className="absolute top-4 right-4 bg-white/5 text-slate-400 text-[11px] font-bold px-3 py-1 rounded-full border border-white/5 z-10">
                     지원자 비디오 송출 중
                   </div>
@@ -832,8 +821,8 @@ export default function InterviewPage() {
                   {/* Decibel volume wave indicator at bottom */}
                   {isRecording && (
                     <div className="absolute bottom-0 left-0 w-full h-1 bg-slate-800 z-10">
-                      <div 
-                        className="h-full bg-red-500 transition-all duration-100" 
+                      <div
+                        className="h-full bg-red-500 transition-all duration-100"
                         style={{ width: `${voiceVolume}%` }}
                       ></div>
                     </div>
@@ -853,18 +842,18 @@ export default function InterviewPage() {
                     </span>
                   )}
                 </div>
-                
+
                 <div className="text-[16px] md:text-[18px] text-white font-bold leading-relaxed break-keep min-h-[60px]">
-                  {messages[messages.length - 1]?.content.includes("질문: ") 
-                    ? messages[messages.length - 1].content.split("질문: ").pop() 
+                  {messages[messages.length - 1]?.content.includes("질문: ")
+                    ? messages[messages.length - 1].content.split("질문: ").pop()
                     : messages[messages.length - 1]?.content || "질문을 대기 중입니다..."}
                 </div>
               </div>
-              
+
               {/* Practice Guide Panel (연습 모드 전용) */}
               {mode === "practice" && (currentTips || currentKeywords.length > 0) && (
                 <div className="max-w-[1000px] w-full grid grid-cols-1 md:grid-cols-12 gap-5 mt-6">
-                  
+
                   {/* Tips Box */}
                   <div className="md:col-span-8 bg-[#004C99]/5 border border-[#004C99]/15 rounded-xl p-5 flex gap-3.5">
                     <BookOpen size={20} className="text-[#0066CC] flex-shrink-0 mt-0.5" />
@@ -887,11 +876,11 @@ export default function InterviewPage() {
                         {currentKeywords.map((keyword, i) => {
                           const isMatched = matchedKeywords.includes(keyword);
                           return (
-                            <span 
-                              key={i} 
+                            <span
+                              key={i}
                               className={`text-[11px] font-bold px-2 py-1 rounded transition-all duration-300 border ${
-                                isMatched 
-                                  ? 'bg-green-500/10 border-green-500/40 text-green-400 shadow-[0_0_8px_rgba(34,197,94,0.1)]' 
+                                isMatched
+                                  ? 'bg-green-500/10 border-green-500/40 text-green-400 shadow-[0_0_8px_rgba(34,197,94,0.1)]'
                                   : 'bg-slate-800 border-slate-700 text-slate-400'
                               }`}
                             >
@@ -903,7 +892,7 @@ export default function InterviewPage() {
                     </div>
                     {matchedKeywords.length > 0 && (
                       <p className="text-[10px] text-green-400 font-bold mt-2">
-                        ✓ {matchedKeywords.length}개 키워드 매칭 완료!
+                        ✓ {matchedKeywords.length}개 핵심 키워드 반영 완료!
                       </p>
                     )}
                   </div>
@@ -916,21 +905,21 @@ export default function InterviewPage() {
             {/* Answer Control Console */}
             <div className="p-6 border-t border-slate-800 bg-[#0F172A] z-20">
               <div className="max-w-[800px] mx-auto flex gap-4">
-                
+
                 {/* Voice Record Button */}
                 <button
                   onClick={startVoiceSimulation}
                   disabled={isTyping}
                   className={`w-[60px] h-[60px] rounded-xl flex items-center justify-center transition-all ${
-                    isRecording 
-                      ? 'bg-red-600 text-white animate-pulse' 
+                    isRecording
+                      ? 'bg-red-600 text-white animate-pulse'
                       : 'bg-slate-800 text-slate-400 hover:text-white'
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
                   title={isRecording ? "녹음 중지" : "음성 답변 시뮬레이션"}
                 >
                   {isRecording ? <MicOff size={22} /> : <Mic size={22} />}
                 </button>
-                
+
                 <textarea
                   className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3.5 outline-none focus:border-[#004C99] focus:ring-1 focus:ring-[#004C99] transition-all text-white resize-none h-[60px] min-h-[60px] max-h-32 text-[14px] leading-relaxed placeholder-slate-500"
                   placeholder={isRecording ? "음성을 텍스트로 녹음하는 중입니다..." : "이곳에 답변 내용을 기입하거나 음성 입력을 지원하세요..."}
@@ -944,7 +933,7 @@ export default function InterviewPage() {
                     }
                   }}
                 />
-                
+
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || isTyping}
@@ -967,9 +956,9 @@ export default function InterviewPage() {
 
       {/* 3. Interview Result / Evaluation Phase */}
       {step === "result" && (
-        <InterviewResult 
-          company={company} 
-          evaluation={finalEvaluation} 
+        <InterviewResult
+          company={company}
+          evaluation={finalEvaluation}
           qaReport={qaReport}
           scores={finalScores}
           cultureFitBreakdown={finalCultureFitBreakdown}
