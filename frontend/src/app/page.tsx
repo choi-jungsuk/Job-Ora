@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Sparkles, Bot, DatabaseZap, ClipboardCheck, ArrowRight,
   HelpCircle, CheckCircle2, AlertCircle, FileText, RefreshCw,
-  ChevronDown, ChevronUp, Check, Award
+  ChevronDown, ChevronUp, Check, Award, ExternalLink
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -662,6 +662,38 @@ export default function Home() {
               );
             })}
           </div>
+        </section>
+
+        {/* ========================================================
+            9. 공공 해외취업 정보 확인처 섹션 (하단 보조 안내)
+            ======================================================== */}
+        <section className="bg-slate-50/80 rounded-2xl border border-slate-200/90 p-6 md:p-8 space-y-4">
+          <div>
+            <h2 className="text-[18px] md:text-[20px] font-bold text-slate-900 tracking-tight">
+              공공 해외취업 정보 확인처
+            </h2>
+            <p className="text-[13.5px] md:text-[14px] text-slate-600 leading-relaxed break-keep mt-2">
+              Job-Ora는 채용정보를 제공하거나 특정 일자리를 추천하지 않습니다.<br />
+              해외취업 공고와 지원 조건은 공공기관 또는 해당 공고 제공처에서 직접 확인한 뒤,
+              필요한 내용을 Job-Ora에 붙여넣어 면접 연습에 활용할 수 있습니다.
+            </p>
+          </div>
+
+          <div>
+            <a
+              href="https://www.worldjob.or.kr/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 hover:text-slate-900 text-[13.5px] font-bold transition-colors shadow-sm"
+            >
+              <span>월드잡플러스 바로가기</span>
+              <ExternalLink size={14} className="text-slate-500" />
+            </a>
+          </div>
+
+          <p className="text-[12.5px] text-slate-500 leading-relaxed">
+            외부 사이트의 채용공고, 지원 조건, 비자 요건, 고용 조건은 해당 사이트와 관련 기관의 안내를 기준으로 확인해야 합니다.
+          </p>
         </section>
 
       </main>
