@@ -684,15 +684,27 @@ export default function Home() {
               href="https://www.worldjob.or.kr/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 hover:text-slate-900 text-[13.5px] font-bold transition-colors shadow-sm"
+              className="inline-flex flex-col sm:flex-row sm:items-center gap-3.5 rounded-2xl bg-white border border-slate-200/90 px-5 py-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group"
             >
-              <span>월드잡플러스 바로가기</span>
-              <ExternalLink size={14} className="text-slate-500" />
+              <img
+                src="/logos/worldjobplus-logo.png"
+                alt="월드잡플러스 로고"
+                className="h-9 w-auto object-contain"
+              />
+              <div className="flex flex-col">
+                <span className="text-[14px] font-bold text-slate-800 group-hover:text-[#004C99] flex items-center gap-1.5 transition-colors">
+                  월드잡플러스 바로가기
+                  <ExternalLink size={14} className="text-slate-400 group-hover:text-[#004C99]" />
+                </span>
+                <span className="text-[12.5px] text-slate-500">
+                  외부 공공 해외취업 정보 포털로 이동합니다.
+                </span>
+              </div>
             </a>
           </div>
 
           <p className="text-[12.5px] text-slate-500 leading-relaxed">
-            외부 사이트의 채용공고, 지원 조건, 비자 요건, 고용 조건은 해당 사이트와 관련 기관의 안내를 기준으로 확인해야 합니다.
+            외부 사이트의 채용공고, 지원 조건, 비자 요건, 고용 조건은 해당 사이트와 관련 기관의 안내를 기준으로 확인해야 합니다. Job-Ora는 외부 사이트의 정보를 제공하거나 보증하지 않습니다.
           </p>
         </section>
 
