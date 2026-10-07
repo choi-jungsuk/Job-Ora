@@ -3,38 +3,28 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Sparkles, Bot, DatabaseZap, ClipboardCheck, ArrowRight,
-  HelpCircle, CheckCircle2, AlertCircle, FileText, RefreshCw,
-  ChevronDown, ChevronUp, Check, Award, ExternalLink
+  Sparkles, ArrowRight, HelpCircle, CheckCircle2, AlertCircle,
+  FileText, RefreshCw, ChevronDown, ChevronUp, Check, Award, ExternalLink
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-// AI 에이전트 협업 단계
-const AI_AGENTS = [
+// 면접 연습 진행 흐름 단계
+const PRACTICE_STEPS = [
   {
-    step: "STEP 1",
-    name: "공고 & 직무 분석 에이전트",
-    role: "Job Analysis Agent",
-    icon: DatabaseZap,
-    color: "from-sky-500 to-blue-700",
-    description: "사용자가 입력한 채용공고 URL 또는 본문에서 필요 역량과 핵심 업무 요건을 정밀 분석합니다.",
+    step: "1",
+    title: "공고 내용 정리",
+    description: "입력한 공고와 기업정보에서 직무, 요구 역량, 인재상을 정리합니다.",
   },
   {
-    step: "STEP 2",
-    name: "AI 면접관 질문 설계 에이전트",
-    role: "Interview Designer",
-    icon: Bot,
-    color: "from-indigo-500 to-violet-700",
-    description: "분석된 공고 직무를 바탕으로 지원 동기, 실무 역량, 해외 근무 적응에 관한 실전 면접 질문을 생성합니다.",
+    step: "2",
+    title: "예상 질문 생성",
+    description: "지원 직무와 기업 기준에 맞춘 면접 질문을 만듭니다.",
   },
   {
-    step: "STEP 3",
-    name: "답변 피드백 코치 에이전트",
-    role: "Evaluation Coach",
-    icon: ClipboardCheck,
-    color: "from-emerald-500 to-teal-700",
-    description: "작성된 답변의 명확성, 직무 관련성, 구체성, 개선할 표현을 5대 관점에서 다각도로 코칭합니다.",
+    step: "3",
+    title: "답변 피드백",
+    description: "작성한 답변의 명확성, 구체성, 직무 관련성을 점검합니다.",
   },
 ];
 
@@ -548,38 +538,37 @@ export default function Home() {
         )}
 
         {/* ========================================================
-            AI 에이전트 협업 소개 (공고 기반 프로세스)
+            면접 연습 진행 흐름 안내 섹션 (사용자 흐름 중심)
             ======================================================== */}
-        <section className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_8px_30px_rgba(15,23,42,0.03)] p-6 md:p-10 overflow-hidden relative">
-          <div className="relative z-10 mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#004C99]/5 text-[#004C99] text-[12px] font-black mb-3 border border-[#004C99]/10">
-              <Sparkles size={14} /> Job-Ora AI Pipeline
-            </div>
-            <h2 className="text-[22px] md:text-[26px] font-black text-[#0F172A] tracking-tight">
-              입력한 공고를 바탕으로 3개의 AI 에이전트가 함께 모의면접을 완성합니다
+        <section className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_8px_24px_rgba(15,23,42,0.025)] p-6 md:p-8">
+          <div className="mb-5">
+            <h2 className="text-[20px] md:text-[22px] font-black text-[#0F172A] tracking-tight">
+              면접 연습은 이렇게 진행됩니다
             </h2>
-            <p className="text-slate-500 text-[14px] md:text-[15px] mt-2 leading-relaxed break-keep">
-              단순 정형화된 공통 질문이 아니라, 사용자가 입력한 공고문과 직무 설명을 분석하여 예상 질문과 맞춤 피드백을 단계별로 도출합니다.
+            <p className="text-slate-500 text-[14px] mt-2 leading-relaxed break-keep">
+              사용자가 입력한 공고와 기업 정보를 바탕으로 핵심 내용을 정리하고, 예상 질문과 답변 피드백을 제공합니다.
             </p>
           </div>
 
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-5">
-            {AI_AGENTS.map((agent) => {
-              const Icon = agent.icon;
-              return (
-                <div key={agent.name} className="relative rounded-2xl border border-slate-100 bg-slate-50/60 p-6 hover:bg-white hover:shadow-lg transition-all flex flex-col">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-white shadow-md`}>
-                      <Icon size={22} />
-                    </div>
-                    <span className="text-[12px] font-black text-slate-400">{agent.step}</span>
-                  </div>
-                  <p className="text-[12px] font-black text-[#004C99] uppercase tracking-wide mb-1">{agent.role}</p>
-                  <h3 className="text-[17px] font-black text-[#0F172A] mb-2">{agent.name}</h3>
-                  <p className="text-[13px] leading-relaxed text-slate-500 break-keep">{agent.description}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            {PRACTICE_STEPS.map((item) => (
+              <div
+                key={item.step}
+                className="rounded-2xl border border-slate-100 bg-slate-50/70 p-5 flex flex-col gap-2.5"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="w-7 h-7 rounded-full bg-blue-50 text-[#004C99] flex items-center justify-center text-[12px] font-black flex-shrink-0">
+                    {item.step}
+                  </span>
+                  <h3 className="text-[15.5px] font-bold text-slate-900">
+                    {item.step}. {item.title}
+                  </h3>
                 </div>
-              );
-            })}
+                <p className="text-[13px] leading-relaxed text-slate-600 break-keep">
+                  {item.description}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
 
