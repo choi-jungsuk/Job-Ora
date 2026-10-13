@@ -26,6 +26,7 @@ export const COMPANY_INFO: CompanyInfo = {
 
 export interface PricingPlan {
   id: string;
+  productId: string;
   name: string;
   price: number;
   priceFormatted: string;
@@ -37,7 +38,8 @@ export interface PricingPlan {
 
 export const PRICING_PLANS: PricingPlan[] = [
   {
-    id: "trial",
+    id: "trial_interview",
+    productId: "trial_interview",
     name: "체험 모의면접 이용권",
     price: 1000,
     priceFormatted: "1,000원",
@@ -52,7 +54,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     ],
   },
   {
-    id: "standard",
+    id: "basic_interview",
+    productId: "basic_interview",
     name: "기본 모의면접 이용권",
     price: 2000,
     priceFormatted: "2,000원",

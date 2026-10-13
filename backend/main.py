@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 import os
-from routes import interview
+from routes import interview, payments
 from fastapi.middleware.cors import CORSMiddleware
 
 # Load environment variables from .env file
@@ -30,6 +30,7 @@ app.add_middleware(
 )
 
 app.include_router(interview.router)
+app.include_router(payments.router)
 
 # MongoDB connection variables
 MONGODB_URL = os.getenv("MONGODB_URL")
