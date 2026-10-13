@@ -7,6 +7,7 @@ export interface CompanyInfo {
   businessType: string;
   businessItem: string;
   supportEmail: string;
+  supportPhone: string;
   operatingHours: string;
   mailOrderSalesRegistration: string;
 }
@@ -20,6 +21,7 @@ export const COMPANY_INFO: CompanyInfo = {
   businessType: "교육서비스업, 정보통신업, 전문·과학 및 기술서비스업 등",
   businessItem: "취업 및 스타트업 교육 및 멘토링, 응용 소프트웨어 개발·공급·운영업, 취업 및 스타트업 지원 컨설팅업 등",
   supportEmail: "contact@granosoai.com",
+  supportPhone: "010-3087-6311",
   operatingHours: "평일 10:00 ~ 17:00 (주말 및 공휴일 휴무)",
   mailOrderSalesRegistration: "제2026-부천원미-1884호",
 };

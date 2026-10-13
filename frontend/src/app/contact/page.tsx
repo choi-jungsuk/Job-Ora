@@ -65,6 +65,7 @@ export default function ContactPage() {
                   </p>
                 </div>
                 <div className="mt-4 text-xs text-slate-500 leading-relaxed">
+                  전화문의: {COMPANY_INFO.supportPhone}<br />
                   문의 내용: 서비스 이용, 결제/환불, 오류 신고, 대학·기관 단체 제휴
                 </div>
               </div>
@@ -152,6 +153,16 @@ export default function ContactPage() {
                     <td className="p-3.5 text-slate-900">
                       <a href={`mailto:${COMPANY_INFO.supportEmail}`} className="text-[#004C99] underline">
                         {COMPANY_INFO.supportEmail}
+                      </a>
+                    </td>
+                  </tr>
+                  <tr className="flex flex-col sm:table-row">
+                    <th className="bg-slate-50 sm:w-1/3 p-3.5 text-left font-semibold text-slate-700 border-b sm:border-b-0 sm:border-r border-slate-200">
+                      고객문의 전화번호
+                    </th>
+                    <td className="p-3.5 text-slate-900">
+                      <a href={`tel:${COMPANY_INFO.supportPhone.replace(/-/g, "")}`} className="text-[#004C99] underline">
+                        {COMPANY_INFO.supportPhone}
                       </a>
                     </td>
                   </tr>

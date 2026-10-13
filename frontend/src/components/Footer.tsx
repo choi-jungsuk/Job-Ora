@@ -65,6 +65,8 @@ export default function Footer() {
               </a>
             </span>
             <span className="text-slate-700">|</span>
+            <span>전화문의: {COMPANY_INFO.supportPhone}</span>
+            <span className="text-slate-700">|</span>
             <span>운영시간: {COMPANY_INFO.operatingHours}</span>
           </div>
 
