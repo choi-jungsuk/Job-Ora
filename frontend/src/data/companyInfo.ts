@@ -3,6 +3,7 @@ export interface CompanyInfo {
   legalName: string;
   representative: string;
   businessRegistrationNumber: string;
+  businessAddress: string;
   businessType: string;
   businessItem: string;
   supportEmail: string;
@@ -15,6 +16,7 @@ export const COMPANY_INFO: CompanyInfo = {
   legalName: "주식회사 그란오소",
   representative: "최정석",
   businessRegistrationNumber: "246-87-02662",
+  businessAddress: "경기도 부천시 원미구 부일로 203, 102동 14층 1402호 (상동, 상동스카이뷰자이)",
   businessType: "교육서비스업, 정보통신업, 전문·과학 및 기술서비스업 등",
   businessItem: "취업 및 스타트업 교육 및 멘토링, 응용 소프트웨어 개발·공급·운영업, 취업 및 스타트업 지원 컨설팅업 등",
   supportEmail: "contact@granosoai.com",

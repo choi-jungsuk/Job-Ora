@@ -115,11 +115,18 @@ export default function ContactPage() {
                   </tr>
                   <tr className="flex flex-col sm:table-row">
                     <th className="bg-slate-50 sm:w-1/3 p-3.5 text-left font-semibold text-slate-700 border-b sm:border-b-0 sm:border-r border-slate-200">
+                      사업장 주소
+                    </th>
+                    <td className="p-3.5 text-slate-900">
+                      {COMPANY_INFO.businessAddress}
+                    </td>
+                  </tr>
+                  <tr className="flex flex-col sm:table-row">
+                    <th className="bg-slate-50 sm:w-1/3 p-3.5 text-left font-semibold text-slate-700 border-b sm:border-b-0 sm:border-r border-slate-200">
                       통신판매업 신고번호
                     </th>
                     <td className="p-3.5 text-slate-900">
                       {COMPANY_INFO.mailOrderSalesRegistration}
-                      <span className="text-xs text-slate-400 ml-2">(신고 완료 후 번호 갱신 예정)</span>
                     </td>
                   </tr>
                   <tr className="flex flex-col sm:table-row">
@@ -155,7 +162,7 @@ export default function ContactPage() {
             <div className="mt-4 flex items-start gap-2 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-200/60">
               <HelpCircle size={14} className="flex-shrink-0 mt-0.5 text-slate-400" />
               <span>
-                통신판매업 신고번호는 관할 구청 신고 절차 완료 후 최종 번호로 갱신 게시됩니다.
+                위 사업자정보는 토스페이먼츠 및 카드사 심사를 위해 사업자등록증 기준으로 게시되었습니다.
               </span>
             </div>
           </section>

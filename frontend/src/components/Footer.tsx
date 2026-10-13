@@ -68,6 +68,10 @@ export default function Footer() {
             <span>운영시간: {COMPANY_INFO.operatingHours}</span>
           </div>
 
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span>사업장 주소: {COMPANY_INFO.businessAddress}</span>
+          </div>
+
           <div className="pt-4 text-slate-500 text-[12px]">
             © {new Date().getFullYear()} {COMPANY_INFO.legalName}. All rights reserved.
           </div>
