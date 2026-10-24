@@ -16,6 +16,7 @@ interface InterviewResultProps {
     answer: string;
     evaluation: string;
     betterAnswer?: string;
+    better_answer?: string;
   }[];
   scores?: {
     technical: number;
@@ -23,7 +24,7 @@ interface InterviewResultProps {
     problem_solving: number;
     culture_fit: number;
     initiative: number;
-  };
+  } | null;
   cultureFitBreakdown?: {
     value_name: string;
     score: number;
@@ -35,6 +36,7 @@ export default function InterviewResult({
   company,
   evaluation,
   qaReport,
+  scores,
 }: InterviewResultProps) {
   const router = useRouter();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
@@ -80,6 +82,67 @@ export default function InterviewResult({
             입력하신 채용공고, 기업정보, 인재상, 직무 설명을 바탕으로 분석된 공고 요약, 요구 역량, 예상 질문 및 답변 피드백입니다.
           </p>
         </div>
+
+        {/* ========================================================
+            AI 종합 평가 및 정량 역량 진단 카드
+            ======================================================== */}
+        <section className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8">
+          <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+            <h2 className="text-[18px] font-black text-slate-900 flex items-center gap-2.5">
+              <Sparkles size={18} className="text-[#004C99]" />
+              AI 모의면접 정량 진단 및 총평
+            </h2>
+            <span className={`text-[12px] font-bold px-3 py-1 rounded-full border ${
+              scores
+                ? "text-blue-700 bg-blue-50 border-blue-100"
+                : "text-slate-500 bg-slate-50 border-slate-200"
+            }`}>
+              {scores ? "정량 평가 완료" : "숫자 평가 미완료/미제공"}
+            </span>
+          </div>
+
+          {evaluation && (
+            <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-100 mb-5 text-[14px] text-slate-700 leading-relaxed">
+              <strong className="text-[#004C99] block mb-1 font-bold">면접 총평</strong>
+              <p className="whitespace-pre-wrap">{evaluation}</p>
+            </div>
+          )}
+
+          {scores ? (
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                <span className="text-[11px] font-bold text-slate-500 block mb-1">직무 역량</span>
+                <span className="text-[20px] font-black text-[#004C99]">{scores.technical}점</span>
+              </div>
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                <span className="text-[11px] font-bold text-slate-500 block mb-1">의사소통</span>
+                <span className="text-[20px] font-black text-[#004C99]">{scores.communication}점</span>
+              </div>
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                <span className="text-[11px] font-bold text-slate-500 block mb-1">문제해결</span>
+                <span className="text-[20px] font-black text-[#004C99]">{scores.problem_solving}점</span>
+              </div>
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                <span className="text-[11px] font-bold text-slate-500 block mb-1">조직적합도</span>
+                <span className="text-[20px] font-black text-[#004C99]">{scores.culture_fit}점</span>
+              </div>
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-center col-span-2 sm:col-span-1">
+                <span className="text-[11px] font-bold text-slate-500 block mb-1">주도성</span>
+                <span className="text-[20px] font-black text-[#004C99]">{scores.initiative}점</span>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200 text-slate-600 text-[13px] flex items-center justify-between">
+              <div>
+                <strong className="text-slate-800 font-bold block mb-0.5">정량 점수 안내</strong>
+                <span>숫자 평가 미완료/미제공 (서술형 코칭 및 답변 피드백 중심으로 제공됩니다)</span>
+              </div>
+              <span className="text-[11px] font-bold text-slate-500 bg-white px-2.5 py-1 rounded border border-slate-200">
+                서술형 피드백
+              </span>
+            </div>
+          )}
+        </section>
 
         {/* ========================================================
             1. 공고 핵심 요약
@@ -200,7 +263,9 @@ export default function InterviewResult({
               <span className="w-7 h-7 rounded-lg bg-[#004C99] text-white flex items-center justify-center text-[13px] font-black">4</span>
               답변 연습
             </h2>
-            <span className="text-[12px] font-bold text-slate-400">질문별 실전 작성 및 수정</span>
+            <span className="text-[12px] font-bold text-slate-400">
+              {qaReport.length > 0 ? "질문별 실전 작성 및 수정" : "공통 참고 가이드 질문 연습"}
+            </span>
           </div>
 
           <p className="text-slate-500 text-[14px] mb-5">
@@ -266,30 +331,34 @@ export default function InterviewResult({
               답변 피드백
             </h2>
             <span className="text-[12px] font-bold text-[#004C99] bg-blue-50 px-3 py-1 rounded-full">
-              5대 정밀 평가 기준
+              문항별 AI 맞춤 피드백
             </span>
           </div>
 
           <p className="text-slate-500 text-[14px] mb-5">
-            작성하신 답변을 바탕으로 AI가 다음 5가지 핵심 관점(명확성, 관련성, 구체성, 표현 개선, 근거 보완)에서 진단한 피드백입니다.
+            제출하신 답변을 바탕으로 AI 면접관이 직접 분석한 정밀 피드백과 개선 모범 답안입니다.
           </p>
 
           {/* 질문별 상세 피드백 아코디언 */}
           <div className="space-y-4">
-            {(qaReport.length > 0 ? qaReport : [
-              {
-                question: "이 직무에 지원한 이유와 본인의 강점을 설명해 주세요.",
-                answer: practiceAnswers[0] || "(연습 답변 작성 대기 중)",
-                evaluation: evaluation || "지원 직무의 핵심 역할과 본인의 강점이 잘 연결되어 있으나, 구체적인 성과 지표(숫자)를 보강하면 더욱 설득력이 높아집니다.",
-                betterAnswer: "저는 지난 프로젝트에서 사용자 경험 최적화를 통해 전환율을 15% 개선한 경험이 있습니다. 해당 공고에서 요구하는 문제 해결 역량과 저의 데이터 기반 개선 경험이 시너지를 낼 수 있다고 확신하여 지원하였습니다."
-              }
-            ]).map((item, idx) => {
-              const isExpanded = expandedIndex === idx;
-              return (
-                <div
-                  key={idx}
-                  className="border border-slate-200/80 rounded-xl overflow-hidden shadow-sm bg-white"
-                >
+            {qaReport.length === 0 ? (
+              <div className="p-8 text-center bg-slate-50 border border-slate-200/80 rounded-xl text-slate-500">
+                <p className="text-[14px] font-bold text-slate-700 mb-1">
+                  작성된 모의면접 질의응답 피드백이 없습니다.
+                </p>
+                <p className="text-[12px] text-slate-400">
+                  모의면접을 진행하고 답변을 제출하시면 각 문항별 AI 정밀 진단과 개선 모범 답안이 이곳에 표시됩니다.
+                </p>
+              </div>
+            ) : (
+              qaReport.map((item, idx) => {
+                const isExpanded = expandedIndex === idx;
+                const effectiveBetterAnswer = item.betterAnswer || item.better_answer;
+                return (
+                  <div
+                    key={idx}
+                    className="border border-slate-200/80 rounded-xl overflow-hidden shadow-sm bg-white"
+                  >
                   <button
                     onClick={() => setExpandedIndex(isExpanded ? null : idx)}
                     className="w-full p-5 text-left flex justify-between items-center gap-4 bg-slate-50/50 hover:bg-slate-50 transition-colors border-b border-slate-100"
@@ -318,40 +387,6 @@ export default function InterviewResult({
                         </div>
                       </div>
 
-                      {/* 5대 관점 피드백 카드 */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                        <div className="p-4 rounded-xl bg-blue-50/40 border border-blue-100">
-                          <span className="text-[12px] font-black text-[#004C99] block mb-1">1. 답변의 명확성</span>
-                          <p className="text-[13px] text-slate-700 leading-relaxed">
-                            두괄식으로 핵심 메시지를 먼저 제시하였으며, 질문 의도에 부합하는 명확한 방향성을 보이고 있습니다.
-                          </p>
-                        </div>
-                        <div className="p-4 rounded-xl bg-blue-50/40 border border-blue-100">
-                          <span className="text-[12px] font-black text-[#004C99] block mb-1">2. 직무와의 관련성</span>
-                          <p className="text-[13px] text-slate-700 leading-relaxed">
-                            공고에서 요구하는 {company.jobRole || "해당 직무"}의 핵심 업무 책임과 지원자의 경험이 긴밀하게 연결되어 있습니다.
-                          </p>
-                        </div>
-                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                          <span className="text-[12px] font-black text-slate-700 block mb-1">3. 구체성</span>
-                          <p className="text-[13px] text-slate-600 leading-relaxed">
-                            단순한 서술보다 실제 본인이 직면했던 문제 상황(Situation)과 취했던 조치(Action)를 더욱 상세히 기술하는 것이 좋습니다.
-                          </p>
-                        </div>
-                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                          <span className="text-[12px] font-black text-slate-700 block mb-1">4. 개선할 표현</span>
-                          <p className="text-[13px] text-slate-600 leading-relaxed">
-                            &apos;열심히 하겠습니다&apos;, &apos;최선을 다하겠습니다&apos; 같은 추상적 다짐 대신, 객관적 역량 중심의 표현으로 수정해 보세요.
-                          </p>
-                        </div>
-                        <div className="md:col-span-2 p-4 rounded-xl bg-amber-50/50 border border-amber-200/80">
-                          <span className="text-[12px] font-black text-amber-800 block mb-1">5. 추가하면 좋은 경험 또는 근거</span>
-                          <p className="text-[13px] text-slate-700 leading-relaxed">
-                            지원 공고에 기술된 우대조건이나 협업 사례를 구체적 수치(프로젝트 기간, 기여도 등)와 함께 덧붙이면 설득력이 크게 배가됩니다.
-                          </p>
-                        </div>
-                      </div>
-
                       {/* 종합 코칭 코멘트 */}
                       {item.evaluation && (
                         <div className="flex flex-col gap-1.5 pt-2">
@@ -363,11 +398,11 @@ export default function InterviewResult({
                       )}
 
                       {/* 모범 답안 예시 */}
-                      {item.betterAnswer && (
+                      {effectiveBetterAnswer && (
                         <div className="flex flex-col gap-1.5">
                           <span className="text-[12px] font-black text-[#10B981]">개선 모범 답안 예시</span>
                           <div className="bg-[#10B981]/5 p-4 rounded-xl border border-[#10B981]/20 text-[13.5px] text-slate-700 leading-relaxed font-normal">
-                            {item.betterAnswer}
+                            {effectiveBetterAnswer}
                           </div>
                         </div>
                       )}
@@ -376,7 +411,8 @@ export default function InterviewResult({
                   )}
                 </div>
               );
-            })}
+            })
+          )}
           </div>
         </section>
 

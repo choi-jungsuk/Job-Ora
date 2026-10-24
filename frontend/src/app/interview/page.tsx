@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Send, User, Building, Loader2, Sparkles, Target, Mic, MicOff, Video,
   ShieldCheck, CheckCircle2, Volume2, VolumeX, LogOut, RefreshCw, Play, Clock,
@@ -19,12 +20,38 @@ type Message = {
   content: string;
 };
 
+type ActiveCredit = {
+  credit_id: string;
+  credit_token: string;
+  order_id: string;
+  expires_at?: string;
+};
+
 type QAReportItem = {
   question: string;
   answer: string;
   evaluation: string;
   betterAnswer?: string;
+  better_answer?: string;
 };
+
+function normalizeQaReportItem(raw: Record<string, unknown>): QAReportItem {
+  const improved = (typeof raw.betterAnswer === "string" ? raw.betterAnswer : null)
+    || (typeof raw.better_answer === "string" ? raw.better_answer : "")
+    || "";
+  return {
+    question: typeof raw.question === "string" ? raw.question : "",
+    answer: typeof raw.answer === "string" ? raw.answer : "",
+    evaluation: typeof raw.evaluation === "string" ? raw.evaluation : "",
+    betterAnswer: improved,
+    better_answer: improved,
+  };
+}
+
+function normalizeQaReport(items: unknown): QAReportItem[] {
+  if (!Array.isArray(items)) return [];
+  return items.map((item) => normalizeQaReportItem(typeof item === "object" && item !== null ? item as Record<string, unknown> : {}));
+}
 
 type CompetencyScores = {
   technical: number;
@@ -49,6 +76,16 @@ export default function InterviewPage() {
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [resumeText, setResumeText] = useState("");
 
+  // 이용권 및 권한 상태
+  const [activeCredit, setActiveCredit] = useState<ActiveCredit | null>(null);
+  const [isCreditVerified, setIsCreditVerified] = useState<boolean | null>(null);
+  const [creditSessionStatus, setCreditSessionStatus] = useState<"completed" | "in_progress" | null>(null);
+  const [creditError, setCreditError] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
+  const [chatError, setChatError] = useState<string | null>(null);
+
   // Active Interview States
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -72,13 +109,7 @@ export default function InterviewPage() {
 
   // Result States
   const [qaReport, setQaReport] = useState<QAReportItem[]>([]);
-  const [finalScores, setFinalScores] = useState<CompetencyScores>({
-    technical: 80,
-    communication: 80,
-    problem_solving: 80,
-    culture_fit: 80,
-    initiative: 80
-  });
+  const [finalScores, setFinalScores] = useState<CompetencyScores | null>(null);
   const [finalCultureFitBreakdown, setFinalCultureFitBreakdown] = useState<CultureFitBreakdown[]>([]);
   const [finalEvaluation, setFinalEvaluation] = useState("");
 
@@ -263,6 +294,56 @@ export default function InterviewPage() {
     }
   }, [router]);
 
+  // 비회원 이용권 권한 검증
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const storedCredit = sessionStorage.getItem("jobora_active_credit");
+    if (!storedCredit) {
+      setIsCreditVerified(false);
+      return;
+    }
+
+    try {
+      const parsed: ActiveCredit = JSON.parse(storedCredit);
+      if (!parsed.credit_token) {
+        setIsCreditVerified(false);
+        return;
+      }
+      setActiveCredit(parsed);
+
+      fetch(`${API_BASE_URL}/payments/credits/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credit_token: parsed.credit_token }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.valid) {
+            setIsCreditVerified(true);
+            setCreditError(null);
+            if (data.session_status) {
+              setCreditSessionStatus(data.session_status);
+            } else {
+              setCreditSessionStatus(null);
+            }
+          } else {
+            setIsCreditVerified(false);
+            setCreditSessionStatus(null);
+            setCreditError(data.detail || "이용권이 만료되었거나 이미 사용되었습니다.");
+          }
+        })
+        .catch(() => {
+          setIsCreditVerified(false);
+          setCreditSessionStatus(null);
+          setCreditError("이용권 검증 서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+        });
+    } catch {
+      setIsCreditVerified(false);
+      setCreditSessionStatus(null);
+    }
+  }, []);
+
   // Timer Countdown Effect
   useEffect(() => {
     if (timerActive && timeLeft > 0 && step === "interview") {
@@ -346,51 +427,117 @@ export default function InterviewPage() {
 
   // Initialize and Start Interview
   const startInterview = async () => {
+    if (!activeCredit?.credit_token) {
+      alert("모의면접 이용권이 필요합니다. 이용권 안내 페이지에서 결제 후 입장해 주세요.");
+      router.push("/pricing");
+      return;
+    }
+
     setStep("interview");
     setIsTyping(true);
     setInterviewerSpeaking(true);
+    setStartError(null);
 
     try {
       const response = await fetch(`${API_BASE_URL}/interview/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          credit_token: activeCredit.credit_token,
           jd_text: company.description,
           resume_text: resumeText,
           company_name: company.name,
-          ideal_candidate_profile: company.idealCandidate
-        })
+          ideal_candidate_profile: company.idealCandidate,
+        }),
       });
 
-      if (!response.ok) throw new Error("Failed to start interview");
+      const data = await response.json().catch(() => ({}));
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "AI 모의면접 질문 생성에 실패했습니다.");
+      }
+
+      if (data.session_id) setSessionId(data.session_id);
+      if (data.session_token) setSessionToken(data.session_token);
+
+      // 이미 완료된 세션으로 재접속한 경우: 결과 화면으로 즉시 복원
+      if (data.is_finished) {
+        setFinalScores(data.scores || null);
+        setFinalCultureFitBreakdown(data.culture_fit_breakdown || []);
+        setFinalEvaluation(data.evaluation || "기존에 완료된 모의면접 분석 결과입니다.");
+        if (data.qa_report && data.qa_report.length > 0) {
+          setQaReport(normalizeQaReport(data.qa_report));
+        }
+        setIsTyping(false);
+        setInterviewerSpeaking(false);
+        setStep("result");
+        return;
+      }
+
+      // 진행 중인 세션으로 재접속한 경우: 이전 대화 이력과 직전 평가/피드백 복원
+      if (data.reconnected && data.history && data.history.length > 0) {
+        const restoredMessages: Message[] = [...data.history];
+        const lastMsg = restoredMessages[restoredMessages.length - 1];
+        if (lastMsg && lastMsg.role === "candidate" && data.current_question) {
+          restoredMessages.push({
+            role: "interviewer",
+            content: `답변 감사드립니다. 이어서 질문 드리겠습니다.\n\n질문: ${data.current_question}`,
+          });
+        }
+        setMessages(restoredMessages);
+        if (data.qa_report && data.qa_report.length > 0) {
+          setQaReport(normalizeQaReport(data.qa_report));
+        }
+        if (data.questions && data.questions.length > 0) {
+          const matchingQ = data.questions.find((q: string | { question: string; tips?: string; keywords?: string[] }) =>
+            (typeof q === "string" ? q : q.question) === data.current_question
+          ) || data.questions[0];
+          const questionTips = typeof matchingQ === "string" ? "" : matchingQ.tips || "";
+          const questionKeywords = typeof matchingQ === "string" ? [] : matchingQ.keywords || [];
+          setCurrentTips(questionTips);
+          setCurrentKeywords(questionKeywords);
+        }
+        setIsTyping(false);
+        setInterviewerSpeaking(false);
+        setTimeLeft(mode === "practice" ? 180 : 120);
+        setTimerActive(true);
+        return;
+      }
 
       if (data.questions && data.questions.length > 0) {
         const firstQ = data.questions[0];
         // Handle both old list response and new object response formats
         const questionText = typeof firstQ === "string" ? firstQ : firstQ.question;
-        const questionTips = typeof firstQ === "string" ? "" : firstQ.tips;
-        const questionKeywords = typeof firstQ === "string" ? [] : firstQ.keywords;
+        const questionTips = (typeof firstQ === "string" ? "" : firstQ.tips) || "";
+        const questionKeywords = (typeof firstQ === "string" ? [] : firstQ.keywords) || [];
 
         setMessages([
           {
             role: "interviewer",
-            content: `안녕하세요. ${company.name} 기준 AI 모의면접을 시작하겠습니다. 첫 번째 질문을 드릴 테니 준비되시면 답변해 주시기 바랍니다.\n\n질문: ${questionText}`
-          }
+            content: `안녕하세요. ${company.name} 기준 AI 모의면접을 시작하겠습니다. 첫 번째 질문을 드릴 테니 준비되시면 답변해 주시기 바랍니다.\n\n질문: ${questionText}`,
+          },
         ]);
 
         setCurrentTips(questionTips);
         setCurrentKeywords(questionKeywords);
       } else {
         setMessages([
-          { role: "interviewer", content: `안녕하세요. ${company.name} 기준 AI 모의면접을 진행하게 된 면접관 ${persona.roleName}입니다. 본인의 이력서와 직무 경력을 바탕으로 간단히 자기소개를 부탁드립니다.` }
+          {
+            role: "interviewer",
+            content: `안녕하세요. ${company.name} 기준 AI 모의면접을 진행하게 된 면접관 ${persona.roleName}입니다. 본인의 이력서와 직무 경력을 바탕으로 간단히 자기소개를 부탁드립니다.`,
+          },
         ]);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: unknown) {
+      console.error("[Interview Start Error]", err);
+      const e = err as Error;
+      const errorMsg = e.message || "AI 모의면접 질문 생성에 실패했습니다.";
+      setStartError(errorMsg);
       setMessages([
-        { role: "interviewer", content: `(오프라인 모드 연결됨) 안녕하세요. ${company.name} 기준 AI 모의면접을 진행하게 된 면접관 ${persona.roleName}입니다. 준비되셨다면 자기소개를 부탁드립니다.` }
+        {
+          role: "interviewer",
+          content: `[시스템 안내] AI 면접 질문 생성 중 오류가 발생했습니다: ${errorMsg}\n\n이용권은 안전하게 보존(차감 취소)되었으며, 아래 '다시 시도' 버튼을 눌러 다시 호출하실 수 있습니다.`,
+        },
       ]);
     } finally {
       setIsTyping(false);
@@ -405,53 +552,60 @@ export default function InterviewPage() {
     if (!input.trim() || isTyping) return;
 
     setTimerActive(false);
-    const userMessage: Message = { role: "candidate", content: input };
-    const newHistory = [...messages, userMessage];
+    const candidateAnswer = input;
+    const previousMessages = messages;
+    const userMessage: Message = { role: "candidate", content: candidateAnswer };
+    const newHistory = [...previousMessages, userMessage];
     setMessages(newHistory);
 
-    const candidateAnswer = input;
     setInput("");
     setIsTyping(true);
     setInterviewerSpeaking(true);
     setIsRecording(false);
+    setChatError(null);
 
     try {
       const response = await fetch(`${API_BASE_URL}/interview/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          session_id: sessionId || "",
+          session_token: sessionToken || "",
           jd_text: company.description,
           resume_text: resumeText,
           company_name: company.name,
           ideal_candidate_profile: company.idealCandidate,
-          history: newHistory
-        })
+          history: newHistory,
+        }),
       });
 
-      if (!response.ok) throw new Error("Failed to communicate");
+      const data = await response.json().catch(() => ({}));
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "면접관 응답 처리에 실패했습니다.");
+      }
 
       // Store evaluation for this answer
-      const currentQText = messages[messages.length - 1]?.content.split("질문: ").pop() || "자기소개 요청";
-      const newReportItem: QAReportItem = {
-        question: currentQText,
-        answer: candidateAnswer,
-        evaluation: data.evaluation || "무난한 답변입니다.",
-        betterAnswer: data.better_answer || ""
-      };
-      setQaReport(prev => [...prev, newReportItem]);
+      if (data.qa_report && data.qa_report.length > 0) {
+        setQaReport(normalizeQaReport(data.qa_report));
+      } else {
+        const currentQText =
+          messages[messages.length - 1]?.content.split("질문: ").pop() || "자기소개 요청";
+        const improved = data.better_answer || data.betterAnswer || "";
+        const newReportItem: QAReportItem = {
+          question: currentQText,
+          answer: candidateAnswer,
+          evaluation: data.evaluation || "평가 진행 중",
+          betterAnswer: improved,
+          better_answer: improved,
+        };
+        setQaReport((prev) => [...prev, newReportItem]);
+      }
 
       if (data.is_finished) {
-        setFinalScores(data.scores || {
-          technical: 85,
-          communication: 80,
-          problem_solving: 82,
-          culture_fit: 90,
-          initiative: 88
-        });
+        setFinalScores(data.scores || null);
         setFinalCultureFitBreakdown(data.culture_fit_breakdown || []);
-        setFinalEvaluation(data.evaluation || "종합 피드백이 완료되었습니다.");
+        setFinalEvaluation(data.evaluation || "모의면접이 종료되었습니다.");
         if (typeof window !== "undefined" && window.speechSynthesis) {
           window.speechSynthesis.cancel();
         }
@@ -461,15 +615,32 @@ export default function InterviewPage() {
       }
 
       if (data.next_question) {
-        setMessages([...newHistory, { role: "interviewer", content: `답변 감사드립니다. 이어서 질문 드리겠습니다.\n\n질문: ${data.next_question}` }]);
+        setMessages([
+          ...newHistory,
+          {
+            role: "interviewer",
+            content: `답변 감사드립니다. 이어서 질문 드리겠습니다.\n\n질문: ${data.next_question}`,
+          },
+        ]);
         setCurrentTips(data.tips || "");
         setCurrentKeywords(data.keywords || []);
       } else {
-        setMessages([...newHistory, { role: "interviewer", content: "답변 잘 들었습니다. 본인의 경력과 관련해 이 회사에서 어떤 가치창출을 보일 수 있는지 추가로 설명해 주십시오." }]);
+        setMessages([
+          ...newHistory,
+          {
+            role: "interviewer",
+            content:
+              "답변 잘 들었습니다. 본인의 경력과 관련해 이 회사에서 어떤 가치창출을 보일 수 있는지 추가로 설명해 주십시오.",
+          },
+        ]);
       }
-    } catch (err) {
-      console.error(err);
-      setMessages([...newHistory, { role: "interviewer", content: "(네트워크 타임아웃으로 로컬 질문으로 대체합니다.) 입사 후 조직 내 갈등이 발생한다면 어떻게 해결하시겠습니까?" }]);
+    } catch (err: unknown) {
+      console.error("[Interview Chat Error]", err);
+      const e = err as Error;
+      const chatErrorMsg = e.message || "AI 면접관의 응답 분석에 실패했습니다.";
+      setChatError(chatErrorMsg);
+      setInput(candidateAnswer); // 입력 내용 복구
+      setMessages(previousMessages); // 오류 안내는 전용 배너로 분리하고 대화 기록 오염 방지
     } finally {
       setIsTyping(false);
       setInterviewerSpeaking(false);
@@ -599,9 +770,69 @@ export default function InterviewPage() {
 
               <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] p-6 md:p-8 flex flex-col h-full justify-between">
                 <div>
-                  <h3 className="text-[18px] font-black text-slate-800 mb-5 pb-3 border-b border-slate-100">
-                    진행할 면접 방식 선택
+                  <h3 className="text-[18px] font-black text-slate-800 mb-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+                    <span>진행할 면접 방식 선택</span>
                   </h3>
+
+                  {/* 이용권 인증 상태 배지 */}
+                  <div className="mb-5">
+                    {isCreditVerified === true ? (
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
+                        <CheckCircle2 size={20} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 text-left">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[13px] font-black text-emerald-800">
+                              {creditSessionStatus === "completed"
+                                ? "완료된 모의면접 세션 확인"
+                                : creditSessionStatus === "in_progress"
+                                  ? "진행 중인 모의면접 이어하기 가능"
+                                  : "모의면접 이용권 인증 완료"}
+                            </span>
+                            <span className="text-[11px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                              {creditSessionStatus === "completed"
+                                ? "결과 보존"
+                                : creditSessionStatus === "in_progress"
+                                  ? "진행 중"
+                                  : "1회 유효"}
+                            </span>
+                          </div>
+                          <p className="text-[12px] text-emerald-700 mt-1">
+                            이용권 번호: <span className="font-mono font-bold">{activeCredit?.credit_id}</span>
+                          </p>
+                          <p className="text-[11px] text-emerald-600 mt-0.5">
+                            {creditSessionStatus === "completed"
+                              ? "※ 이전 면접의 정량 평가 및 개별 답변 피드백을 다시 확인하실 수 있습니다."
+                              : creditSessionStatus === "in_progress"
+                                ? "※ 추가 차감이나 LLM 재호출 없이 기존 대화와 꼬리질문으로 바로 복원됩니다."
+                                : "※ 질문 정상 출제 완료 시 1회 차감 (AI 오류 발생 시 안전 보존)"}
+                          </p>
+                        </div>
+                      </div>
+                    ) : isCreditVerified === false ? (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+                        <AlertCircle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 text-left">
+                          <div className="text-[13px] font-black text-amber-800">
+                            모의면접 이용권 필요
+                          </div>
+                          <p className="text-[12px] text-amber-700 mt-1 leading-relaxed">
+                            {creditError || "결제 후 발급된 이용권이 확인되지 않았습니다. 단건 결제 후 즉시 면접을 진행하실 수 있습니다."}
+                          </p>
+                          <Link
+                            href="/pricing"
+                            className="inline-flex items-center gap-1.5 mt-2.5 px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-[12px] font-bold rounded-lg transition-colors"
+                          >
+                            이용권 구매하러 가기 (1,000원~)
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center gap-2 text-slate-500 text-[12px]">
+                        <Loader2 size={14} className="animate-spin text-[#004C99]" />
+                        이용권 유효성을 확인하고 있습니다...
+                      </div>
+                    )}
+                  </div>
 
                   <div className="flex flex-col gap-4">
                     {/* Practice Mode Card */}
@@ -663,7 +894,13 @@ export default function InterviewPage() {
                     }}
                   >
                     <Play size={16} fill="white" />
-                    {mode === "practice" ? "연습 면접실 입장" : "실전 면접실 입장"}
+                    {isCreditVerified === false
+                      ? "이용권 결제 후 면접 시작 (1,000원~)"
+                      : creditSessionStatus === "completed"
+                        ? "완료된 면접 결과 리포트 확인"
+                        : creditSessionStatus === "in_progress"
+                          ? "진행 중인 모의면접 이어하기"
+                          : mode === "practice" ? "연습 면접실 입장" : "실전 면접실 입장"}
                   </button>
                   <p className="text-center text-[12px] text-slate-400 mt-3 font-semibold">
                     ※ 입장 즉시 기업 맞춤 가치관 학습을 거쳐 첫 질문이 로딩됩니다.
@@ -831,6 +1068,63 @@ export default function InterviewPage() {
 
               </div>
 
+              {/* 면접 시작(AI 질문 생성) 오류 발생 시 이용권 보존 안내 및 재시도 배너 */}
+              {startError && (
+                <div className="max-w-[1000px] w-full bg-red-950/80 border border-red-500/50 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle size={22} className="text-red-400 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-[13px] font-bold text-red-200">
+                        AI 질문 생성에 일시적 오류가 발생했습니다
+                      </h4>
+                      <p className="text-[11px] text-red-300/90 mt-0.5">
+                        이용권은 차감되지 않고 안전하게 보존되었습니다. 다시 시도하시거나 설정으로 돌아가실 수 있습니다.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={startInterview}
+                      className="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white text-[12px] font-bold rounded-lg transition-colors flex items-center gap-1.5"
+                    >
+                      <RefreshCw size={13} />
+                      다시 시도
+                    </button>
+                    <button
+                      onClick={() => setStep("setup")}
+                      className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[12px] font-bold rounded-lg transition-colors"
+                    >
+                      설정으로 이동
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 답변 전송/분석 통신 지연 안내 배너 (이용권 차감 오해 방지 및 답변 보존 안내) */}
+              {chatError && (
+                <div className="max-w-[1000px] w-full bg-amber-950/80 border border-amber-500/50 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle size={22} className="text-amber-400 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-[13px] font-bold text-amber-200">
+                        답변 분석 통신 지연 안내
+                      </h4>
+                      <p className="text-[11px] text-amber-300/90 mt-0.5">
+                        {chatError}. 작성하신 답변은 입력창에 안전하게 보존되었으니 다시 전송해 주세요.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => setChatError(null)}
+                      className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-[12px] font-bold rounded-lg transition-colors"
+                    >
+                      확인
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Subtitles Area (Current Question) */}
               <div className="max-w-[1000px] w-full bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800 p-6 flex flex-col gap-3">
                 <div className="text-slate-400 text-[12px] font-black uppercase tracking-wider flex items-center gap-1.5">
@@ -873,7 +1167,7 @@ export default function InterviewPage() {
                         권장 핵심 키워드
                       </h4>
                       <div className="flex flex-wrap gap-1.5">
-                        {currentKeywords.map((keyword, i) => {
+                        {(currentKeywords || []).map((keyword, i) => {
                           const isMatched = matchedKeywords.includes(keyword);
                           return (
                             <span

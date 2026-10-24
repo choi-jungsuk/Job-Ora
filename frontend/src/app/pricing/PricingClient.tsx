@@ -84,6 +84,12 @@ export default function PricingClient() {
 
       const orderData = await orderRes.json();
 
+      // 비회원 주문 소유권 토큰을 브라우저 sessionStorage에 보관 (PG 리다이렉트 후 confirm 검증용)
+      if (typeof window !== "undefined" && orderData.order_token) {
+        sessionStorage.setItem(`jobora_order_token_${orderData.order_id}`, orderData.order_token);
+        sessionStorage.setItem("jobora_last_order_id", orderData.order_id);
+      }
+
       // 2. 토스페이먼츠 SDK 로드 및 결제창 호출
       const tossPayments = await loadTossPayments(TOSS_CLIENT_KEY);
 

@@ -22,6 +22,8 @@ interface ConfirmResult {
   success: boolean;
   message: string;
   order_id: string;
+  credit_id?: string;
+  credit_token?: string;
   product_id?: string;
   product_name?: string;
   amount: number;
@@ -61,6 +63,11 @@ export default function SuccessClient() {
 
     async function confirmPayment() {
       try {
+        const storedOrderToken =
+          typeof window !== "undefined"
+            ? sessionStorage.getItem(`jobora_order_token_${orderId}`) || ""
+            : "";
+
         const res = await fetch(`${API_BASE_URL}/payments/toss/confirm`, {
           method: "POST",
           headers: {
@@ -70,6 +77,7 @@ export default function SuccessClient() {
             paymentKey,
             orderId,
             amount,
+            orderToken: storedOrderToken,
           }),
         });
 
@@ -82,6 +90,19 @@ export default function SuccessClient() {
         }
 
         setResult(data);
+
+        // 비회원 이용권 권한 토큰을 sessionStorage에 안전하게 보관 (URL에 노출하지 않음)
+        if (data.credit_token) {
+          sessionStorage.setItem(
+            "jobora_active_credit",
+            JSON.stringify({
+              credit_id: data.credit_id,
+              credit_token: data.credit_token,
+              order_id: data.order_id,
+              expires_at: data.expires_at,
+            })
+          );
+        }
       } catch (err: unknown) {
         console.error("[Payment Confirm Error]", err);
         const e = err as Error;
@@ -177,6 +198,15 @@ export default function SuccessClient() {
             </span>
           </div>
 
+          {result?.credit_id && (
+            <div className="flex justify-between items-center text-sm pb-3 border-b border-slate-200">
+              <span className="text-slate-500 font-medium">이용권 번호</span>
+              <span className="font-mono text-[#004C99] text-xs font-bold">
+                {result.credit_id}
+              </span>
+            </div>
+          )}
+
           <div className="flex justify-between items-center text-sm">
             <span className="text-slate-500 font-medium">상품명</span>
             <span className="font-bold text-slate-900">{productName}</span>
@@ -218,10 +248,10 @@ export default function SuccessClient() {
           <p>• 결제 취소 및 환불 안내는 하단 및 <Link href="/refund" className="underline font-semibold text-[#004C99]">환불정책</Link>에서 확인 가능합니다.</p>
         </div>
 
-        {/* 메인 액션 버튼 */}
+        {/* 메인 액션 버튼: /interview 로 직결 */}
         <div className="space-y-3">
           <Link
-            href="/"
+            href="/interview"
             className="w-full py-4 px-6 rounded-xl font-bold text-[15px] bg-[#004C99] hover:bg-[#003875] text-white transition-all flex items-center justify-center gap-2 shadow-sm shadow-blue-900/10 text-center"
           >
             <span>모의면접 시작하기</span>
@@ -238,3 +268,4 @@ export default function SuccessClient() {
     </main>
   );
 }
+
